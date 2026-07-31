@@ -1,0 +1,9 @@
+ArlightBosses 1.16.1 - CENTERED CHESTS + SPAWN EGGS
+
+- Recentrados los cinco modelos de cofres en el origen real del bloque.
+- Los cofres ya no quedan desplazados respecto a su selección/colisión.
+- Nuevo BlockItem GeckoLib 3D para inventario, mano, suelo y marcos.
+- Eliminado el uso del atlas completo como sprite plano del cofre.
+- Añadidos huevos para los Guardianes de Superficie, Nether, Vacío y Dragón.
+- Añadidos modelos template_spawn_egg para todos los huevos existentes.
+- Todos los mobs registrados, salvo proyectiles internos, tienen huevo de aparición.

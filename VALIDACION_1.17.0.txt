@@ -1,0 +1,8 @@
+VALIDACIÓN REALIZADA EN EL ENTORNO DE ENTREGA
+- 111 archivos Java de Bosses+Bingo analizados sintácticamente con javac: 0 errores de parseo.
+- 110 JSON de ambos proyectos: válidos.
+- Registro/modelo de huevo comprobado para 24 entidades; se excluyen únicamente 2 proyectiles internos.
+- Versiones y metadatos actualizados a 1.17.0.
+
+LIMITACIÓN
+No se pudo ejecutar Gradle ni una prueba dentro de Arclight porque el entorno no tiene la distribución/dependencias descargadas. Debe ejecutarse gradlew.bat clean build localmente y probarse en una copia de la arena.

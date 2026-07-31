@@ -1,0 +1,16 @@
+ARLIGHTBOSSES 1.18.0 - COMPATIBILIDAD CON LOOTR
+
+Los cinco cofres ahora son contenedores reales y su BlockEntity extiende
+RandomizableContainerBlockEntity. Esto permite asignarles tablas de botín y
+los hace elegibles para la conversión de contenedores personalizados de Lootr.
+
+ID del BlockEntityType compartido:
+  arlightbosses:treasure_chest
+
+En las versiones de Lootr que usan la lista additional_chests, agrega:
+  additional_chests = ["arlightbosses:treasure_chest"]
+
+Dentro de una partida de ArlightBingo, el plugin mantiene su propio inventario
+personal por jugador para preservar rareza, progresión y objetivos del cartón.
+Los cofres y barriles vanilla con tabla de botín siguen siendo procesables por
+Lootr normalmente.

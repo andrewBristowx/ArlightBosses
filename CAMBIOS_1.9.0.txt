@@ -1,0 +1,31 @@
+ARLIGHTBOSSES 1.9.0 - NUEVOS MODELOS Y ANIMACIONES
+====================================================
+
+Base: 1.8.2 TEXTURE-UV-NETHER-STABILITY.
+
+Cambios:
+- Reemplazados los modelos visuales de todos los esbirros por los 19 modelos de Downloads.zip.
+- Surface Guardian, Nether Guardian y Void Guardian ahora tienen modelos propios.
+- El espacio de Dragon Guardian usa el modelo Somita Cute Vampire entregado por el usuario.
+- Texturas embebidas extraídas directamente de cada .bbmodel con su resolución UV original.
+- Modelos recentrados usando el hitbox oculto diseñado en Blockbench para evitar que aparezcan de lado.
+- Hitboxes de EntityType actualizados para coincidir mejor con los nuevos cuerpos.
+- Animaciones nuevas: aparición, idle, caminar/volar, ataque, recibir daño y muerte.
+- Guardianes: animación adicional de rugido/cambio de fase.
+- Enderman del vacío: animación adicional growl.
+- Animaciones específicas para alas, colas, armas, caparazones, cristales, patas y pylons.
+- Máscaras emisivas generadas para cristales/corrupción y capa AutoGlowingGeoLayer en todos los esbirros.
+- Se mantienen todas las correcciones de compilación y estabilidad de 1.8.2.
+- Se incluyen los .bbmodel originales en blockbench_sources/ y el conversor tools/import_bbmodels.py como referencia.
+
+NOTA SOBRE LA FLECHA
+--------------------
+El modelo de la flecha de corrupción también fue convertido e incluido como recurso y fuente Blockbench.
+La entidad sigue usando el ArrowRenderer vainilla por estabilidad con NeoForge/Arclight; su lógica y textura continúan funcionando.
+
+COMPILAR
+--------
+gradlew.bat clean build
+
+Salida esperada:
+build/libs/ArlightBosses-1.9.0.jar

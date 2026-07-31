@@ -1,0 +1,58 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.somita_vampire.spawn": {
+      "loop": false, "animation_length": 1.5,
+      "bones": {
+        "root": {
+          "scale": { "0": [0,0,0], "1.0": [1.1, 1.1, 1.1], "1.5": [1, 1, 1] },
+          "position": { "0": [0, 10, 0], "1.0": [0, 0, 0] }
+        }
+      }
+    },
+    "animation.somita_vampire.hurt": {
+      "loop": false, "animation_length": 0.3,
+      "bones": {
+        "root": { "rotation": { "0": [0,0,0], "0.1": [0, 10, -5], "0.3": [0,0,0] } }
+      }
+    },
+    "animation.somita_vampire.death": {
+      "loop": false, "animation_length": 4.0,
+      "bones": {
+        "root": {
+          "rotation": { "0": [0, 0, 0], "1.5": [0, 0, 90] },
+          "position": { "0": [0, 0, 0], "1.5": [0, -1.4, 0] },
+          "scale": { "0": [1,1,1], "2.5": [1,1,1], "4.0": [0,0,0] }
+        },
+        "wings": { "rotation": { "0": [0,0,0], "1.0": [0, 0, 60], "3.0": [0, 0, 120] } }
+      }
+    },
+    "animation.somita_vampire.roar": {
+      "loop": false, "animation_length": 1.35,
+      "bones": {
+        "wings": { "rotation": { "0": [0,0,0], "0.45": [0,0,45], "0.9": [0,0,-10], "1.35": [0,0,0] } },
+        "head": { "rotation": { "0": [0,0,0], "0.45": [-35, 0, 0], "1.35": [0,0,0] } }
+      }
+    },
+    "animation.somita_vampire.idle": {
+      "loop": true, "animation_length": 2.4,
+      "bones": {
+        "torso": { "rotation": { "0": [0,0,-1.5], "1.2": [2,0,1.5], "2.4": [0,0,-1.5] } },
+        "wings": { "rotation": { "0": [0,0,-5], "1.2": [0,0,5], "2.4": [0,0,-5] } }
+      }
+    },
+    "animation.somita_vampire.walk": {
+      "loop": true, "animation_length": 1.0,
+      "bones": {
+        "legs": { "rotation": { "0": [25,0,0], "0.5": [-25,0,0], "1": [25,0,0] } }
+      }
+    },
+    "animation.somita_vampire.attack": {
+      "loop": false, "animation_length": 0.6,
+      "bones": {
+        "arms": { "rotation": { "0": [0, 0, 0], "0.1": [-110, 0, 0], "0.25": [45, 0, 0], "0.6": [0, 0, 0] } },
+        "wings": { "rotation": { "0": [0,0,0], "0.2": [0, 0, 45], "0.6": [0, 0, 0] } }
+      }
+    }
+  }
+}

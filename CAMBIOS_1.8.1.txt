@@ -1,0 +1,18 @@
+ArlightBosses 1.8.1 - RANGED MOB IMPORT FIX
+
+Corrección:
+- EmeraldGolemSentinelMinion ahora importa RangedAttackMob desde
+  net.minecraft.world.entity.monster.RangedAttackMob, que es el paquete correcto
+  en Minecraft/NeoForge 1.21.1.
+- Esto corrige los 3 errores: cannot find symbol (import), cannot find symbol
+  (implements) y el @Override de performRangedAttack.
+
+Base:
+- Conserva todos los mobs y recursos de ArlightBosses 1.8.0.
+- Conserva las correcciones de compilación de ArlightBosses 1.7.4.
+
+Compilar:
+  gradlew.bat clean build
+
+Salida esperada:
+  build/libs/ArlightBosses-1.8.1.jar

@@ -1,0 +1,9 @@
+ArlightBosses 1.14.0 - Campaign Keys & Somita
+
+- Llave Ígnea Legendaria (item de misión, modelo BBModel suministrado).
+- Llave del Dragón Esmeraltizada (item de misión, modelo BBModel suministrado).
+- Altar de Perla Corrompida como bloque funcional de campaña.
+- Somita Guide: entidad NPC amistosa, invulnerable y sin IA.
+- Animaciones kawai de introducción, llegada por portal, recoger huevo, despedida y desvanecimiento.
+- Huevo de aparición de Somita para pruebas.
+- El dragón de Bingo no duplica el huevo: la cinemática del plugin lo controla.

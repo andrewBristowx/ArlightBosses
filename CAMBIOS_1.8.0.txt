@@ -1,0 +1,19 @@
+ArlightBosses 1.8.0 - DUNGEON MOBS
+
+Base: ArlightBosses 1.7.4 COMPILE API FIX.
+
+Nuevas criaturas integradas:
+- Emerald Golem Sentinel: centinela fijo de largo alcance para puertas y salas élite.
+- Corrupted Ender Mite: criatura de enjambre para las zonas del End.
+- Amethyst Guardian Shard: cristal flotante con rayo telegrafiado.
+
+Incluye:
+- Registro de EntityType y atributos.
+- Renderers GeckoLib.
+- Modelos, animaciones y texturas.
+- Huevos de aparición y traducciones ES/EN.
+- Conserva las correcciones de AbstractArrow, sonidos, fuego y pestaña creativa de 1.7.4.
+
+Compilar con Java 21:
+  gradlew.bat clean build
+JAR: build/libs/ArlightBosses-1.8.0.jar

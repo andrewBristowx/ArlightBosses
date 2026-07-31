@@ -1,0 +1,7 @@
+ARLIGHTBOSSES 1.16.0 - COFRES DE TESORO PERSONALIZADOS
+
+- Integra cinco bloques animados: cobre, hierro, Pony, diamante y netherita.
+- Modelos y texturas suministrados por el usuario, corregidos a su resolución UV real.
+- Animaciones closed/opening/opened con tapa, cerradura, asas, cristales y adornos.
+- Un BlockEntity GeckoLib compartido selecciona automáticamente el modelo por variante.
+- ArlightBingo controla el inventario personal; estos bloques no almacenan inventario global.

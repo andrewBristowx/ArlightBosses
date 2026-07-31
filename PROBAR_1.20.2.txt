@@ -1,0 +1,8 @@
+ArlightBosses 1.20.2 - Prueba de Somita
+
+1. Invoca a Somita guía con su huevo de aparición.
+2. Obsérvala de frente, de perfil y desde atrás.
+3. Confirma que la cara está despejada y no aparece la carcasa cuadrada.
+4. Reproduce las escenas de llegada, tomar el huevo, despedida y desaparición.
+5. Confirma que cabello, flequillo, ahoge y broche siguen correctamente la cabeza.
+6. Si usas Somita Vampira/Dragon Guardian, comprueba también caminar y atacar.

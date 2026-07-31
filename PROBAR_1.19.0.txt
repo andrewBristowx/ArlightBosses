@@ -1,0 +1,18 @@
+PRUEBA RECOMENDADA — ARLIGHTBOSSES 1.19.0
+===========================================
+
+1. Compila con Java 21: Gradle > build > build.
+2. Instala el mismo JAR en servidor y en todos los clientes.
+3. Elimina cualquier versión anterior de ArlightBosses.
+4. Reinicia servidor y cliente completamente.
+
+COFRES
+- Coloca/encuentra cada una de las cinco variantes.
+- Abre y cierra fuera de Bingo: debe aparecer un inventario real de 27 espacios.
+- Dentro de Bingo: la GUI personal debe abrirse sin reemplazar el bloque.
+- Observa opening y closing; vuelve a abrir para confirmar que conserva el contenido/NBT.
+
+WITHER
+- Revisa al Vanguard de frente, costado y durante ataque.
+- El antebrazo no debe parecer una espada gigante ni quedar separado.
+- La hoja debe permanecer unida a la mano durante idle, caminar y golpear.

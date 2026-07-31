@@ -1,0 +1,7 @@
+VALIDACIÓN FUENTE — ARLIGHTBOSSES 1.20.0
+
+- JSON de geometrías y animaciones parseados correctamente.
+- Nombres de huesos del altar verificados: floating_pearl, magic_effects, pedestal_crystals y runes.
+- Registro de bloque, BlockEntity y renderer añadido.
+- El altar mantiene su modelo estático para el ítem y usa renderer animado al colocarse.
+- La compilación final requiere Java 21, NeoForge 21.1.235 y GeckoLib configurados por Gradle.
