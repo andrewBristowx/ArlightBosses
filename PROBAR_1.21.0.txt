@@ -1,0 +1,29 @@
+PRUEBAS RECOMENDADAS — ARLIGHTBOSSES 1.21.0
+================================================
+
+1. Compila con Java 21:
+   gradlew.bat clean build
+
+2. Sustituye el JAR tanto en servidor como en clientes y reinicia completamente.
+
+3. Prueba el Wither Áureo:
+   /summon arlightbosses:gilded_wither_skeleton_vanguard_minion ~ ~ ~
+   - mira el hombro derecho de frente, de lado y caminando;
+   - confirma que la espada permanece en la mano;
+   - acércate para provocar el golpe de suelo y comprueba que el daño sucede
+     después de que levante el arma.
+
+4. Prueba el Guardián del Vacío:
+   /summon arlightbosses:void_guardian ~ ~ ~
+   - el arma debe seguir siempre la mano derecha;
+   - el ataque normal debe verse como un corte;
+   - baja su vida por debajo de 60 % y 25 % para observar las tres fases;
+   - fase 1: estocada frontal;
+   - fase 2: tres cortes;
+   - fase 3: arma clavada al suelo al aparecer las grietas.
+
+5. Invoca varios esbirros cuerpo a cuerpo y confirma que cada golpe visible
+   reproduce su animación de ataque.
+
+6. Revisa finalmente a Somita guía y Somita Vampira: esta versión conserva la
+   corrección de cabello natural de la 1.20.2.

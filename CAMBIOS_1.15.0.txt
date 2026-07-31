@@ -1,0 +1,8 @@
+ArlightBosses 1.15.0 - ANIMATED NETHER LOCK
+
+- Añade el bloque arlightbosses:nether_dungeon_lock.
+- Usa el modelo nether_dungeon_lock(1).bbmodel suministrado por Pony0n.
+- GeckoLib BlockEntity con animaciones idle, unlock y opened.
+- Cerradura direccional, emisiva, resistente al fuego y persistente por estado de bloque.
+- Animación de apertura: vibración, giro del mecanismo, cadenas, elevación del arco y apagado del núcleo.
+- Se incluye BlockItem para pruebas en creativo.

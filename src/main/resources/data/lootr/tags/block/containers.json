@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "arlightbosses:copper_treasure_chest",
+    "arlightbosses:iron_treasure_chest",
+    "arlightbosses:pony_treasure_chest",
+    "arlightbosses:diamond_treasure_chest",
+    "arlightbosses:netherite_treasure_chest"
+  ]
+}

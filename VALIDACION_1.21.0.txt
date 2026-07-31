@@ -1,0 +1,24 @@
+VALIDACIÓN — ARLIGHTBOSSES 1.21.0
+==================================
+
+RESULTADOS AUTOMÁTICOS
+- 114 archivos JSON leídos correctamente.
+- 30 pares de modelo/animación auditados.
+- 183 animaciones revisadas.
+- 0 referencias a huesos inexistentes.
+- 0 padres de hueso inexistentes.
+- 0 fotogramas fuera de la duración declarada.
+- Void Guardian: weapon depende de right_arm.
+- Wither Áureo: weapon_right depende de right_arm.
+- Los dos archivos Java modificados no presentan errores sintácticos detectables.
+
+LIMITACIÓN DEL ENTORNO
+- No fue posible ejecutar Gradle: falta gradle/wrapper/gradle-wrapper.jar.
+- El entorno disponible usa Java 17 y el proyecto requiere Java 21.
+- Por ello, el JAR debe compilarse localmente con Java 21 mediante:
+  gradlew.bat clean build
+
+PRUEBA DENTRO DEL JUEGO
+- Sigue siendo necesaria para confirmar visualmente pivotes, alcance y sincronía
+  bajo GeckoLib/NeoForge/Arclight.
+- Usa PROBAR_1.21.0.txt como lista de comprobación.

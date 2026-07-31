@@ -1,0 +1,16 @@
+PRUEBA ARLIGHTBOSSES 1.16.0
+
+Bloques:
+- arlightbosses:copper_treasure_chest
+- arlightbosses:iron_treasure_chest
+- arlightbosses:pony_treasure_chest
+- arlightbosses:diamond_treasure_chest
+- arlightbosses:netherite_treasure_chest
+
+Ejemplo:
+/setblock ~ ~ ~ arlightbosses:copper_treasure_chest[facing=north,chest_state=closed]
+/setblock ~ ~ ~ arlightbosses:copper_treasure_chest[facing=north,chest_state=opening]
+/setblock ~ ~ ~ arlightbosses:copper_treasure_chest[facing=north,chest_state=opened]
+
+Cada bloque debe mostrar su modelo, textura y animación correspondiente.
+El inventario personal solo funciona cuando ArlightBingo lo registra dentro de una dungeon.

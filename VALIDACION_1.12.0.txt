@@ -1,0 +1,7 @@
+VALIDACIÓN 1.12.0
+
+- Entidad, renderer, registro, huevo, cliente y clase principal compilados con Java 21.
+- EntityType y huevo registrados con namespace arlightbosses.
+- El renderer vanilla global dejó de reemplazarse.
+- AmethystDragonEvents antiguo fue retirado.
+- IA de fases 1 y 2 usa waypoints de ataque, no DragonPhase.CIRCLING.

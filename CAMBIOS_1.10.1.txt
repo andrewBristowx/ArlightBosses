@@ -1,0 +1,24 @@
+ArlightBosses 1.10.1 - PROJECTILE & VOID WEAPON ATTACKS
+
+GUARDIÁN DE LA SUPERFICIE
+- La antigua descarga de flechas ahora usa rocas musgosas sincronizadas.
+- Las rocas renderizan un bloque de mossy cobblestone en lugar de una flecha.
+- Tienen gravedad, partículas de bloque, retroceso y sonido STONE_BREAK al impactar.
+- La variante normal de la flecha del Emerald Skeleton Archer se mantiene sin cambios.
+
+GUARDIÁN DEL NETHER
+- El bombardeo dorado ahora materializa 11 bloques de oro por encima del objetivo.
+- Los bloques caen con gravedad y hacen impacto pesado en área.
+- Añadidos partículas de bloque de oro y sonidos metálicos/piedra de oro al caer.
+- La esquirla normal del Gilded Piglin se mantiene sin cambios.
+
+GUARDIÁN DEL VACÍO
+- El hueso weapon tiene un pivote colocado en la mano y se anima en spawn, idle, walk, attack, hurt, roar, death y fases.
+- Fase 1: estocada lineal con el arma.
+- Fase 2: tres cortes dimensionales en abanico.
+- Fase 3: golpe de arma contra el suelo que abre doce grietas radiales.
+- Ya no depende de mover solamente ambos brazos para representar los ataques.
+
+COMPATIBILIDAD
+- Somita/DragonGuardian no fue activada ni modificada.
+- IDs de entidades conservados para no romper ArlightBingo 1.18.0.

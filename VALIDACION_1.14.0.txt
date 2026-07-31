@@ -1,0 +1,14 @@
+VALIDACIÓN REALIZADA - ARLIGHTBOSSES 1.14.0
+
+- Código Java nuevo compilado con Java 21 contra NeoForge 21.1.235 y GeckoLib.
+- JAR final ensamblado y comprobado con unzip -t sin errores.
+- mods.toml contiene la versión 1.14.0.
+- Registrados:
+  arlightbosses:igneous_legendary_key
+  arlightbosses:emeraldized_dragon_key
+  arlightbosses:corrupted_pearl_altar
+  arlightbosses:somita_guide
+  arlightbosses:somita_guide_spawn_egg
+- Modelos, blockstate, texturas y animaciones JSON validados.
+- Los tres BBModel suministrados se conservan en blockbench_sources.
+- El Dragón Corrupto con etiqueta de Bingo no coloca un segundo huevo físico.

@@ -1,0 +1,10 @@
+PRUEBAS RECOMENDADAS — ARLIGHTBOSSES 1.17.0
+
+1. Inicia un servidor dedicado Arclight con solamente una versión de ArlightBosses.
+2. Invoca Emerald Skeleton Archer y Surface Guardian; deja proyectiles clavados, descarga el chunk y reinicia.
+3. Confirma que no aparece Cannot encode empty ItemStack.
+4. Invoca el dragón: /summon arlightbosses:amethyst_corrupted_ender_dragon ~ ~8 ~
+5. Prueba sus tres fases y déjalo activo durante una descarga de chunk.
+6. Coloca y abre cada cofre mirando norte/sur/este/oeste.
+7. Prueba Somita de frente, de lado y durante saludo/despedida.
+8. Revisa que los 24 huevos aparezcan en la pestaña de huevos generadores.

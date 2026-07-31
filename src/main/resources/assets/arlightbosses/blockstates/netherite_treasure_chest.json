@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,chest_state=closed": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=north,chest_state=opening": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=north,chest_state=opened": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=east,chest_state=closed": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=east,chest_state=opening": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=east,chest_state=opened": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=south,chest_state=closed": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=south,chest_state=opening": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=south,chest_state=opened": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=west,chest_state=closed": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=west,chest_state=opening": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=west,chest_state=opened": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=north,chest_state=closing": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=east,chest_state=closing": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=south,chest_state=closing": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    },
+    "facing=west,chest_state=closing": {
+      "model": "arlightbosses:block/treasure_chest_placeholder"
+    }
+  }
+}

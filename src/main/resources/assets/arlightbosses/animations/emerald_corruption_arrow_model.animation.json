@@ -1,0 +1,212 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.emerald_corruption_arrow.spawn": {
+      "loop": false,
+      "animation_length": 0.7,
+      "bones": {
+        "root": {
+          "scale": {
+            "0": [
+              0.25,
+              0.25,
+              0.25
+            ],
+            "0.35": [
+              1.12,
+              1.12,
+              1.12
+            ],
+            "0.7": [
+              1,
+              1,
+              1
+            ]
+          },
+          "position": {
+            "0": [
+              0,
+              2,
+              0
+            ],
+            "0.7": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.emerald_corruption_arrow.hurt": {
+      "loop": false,
+      "animation_length": 0.28,
+      "bones": {
+        "root": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "0.1": [
+              0,
+              0,
+              -8
+            ],
+            "0.2": [
+              0,
+              0,
+              5
+            ],
+            "0.28": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.emerald_corruption_arrow.death": {
+      "loop": false,
+      "animation_length": 1.6,
+      "bones": {
+        "root": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "0.7200000000000001": [
+              0,
+              0,
+              18
+            ],
+            "1.6": [
+              0,
+              0,
+              88
+            ]
+          },
+          "position": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1.6": [
+              0,
+              -1.4,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.emerald_corruption_arrow.idle": {
+      "loop": true,
+      "animation_length": 0.6,
+      "bones": {
+        "head": {
+          "rotation": {
+            "0": [
+              0,
+              -4,
+              0
+            ],
+            "0.3": [
+              1.5,
+              4,
+              0
+            ],
+            "0.6": [
+              0,
+              -4,
+              0
+            ]
+          }
+        },
+        "root": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "0.6": [
+              0,
+              0,
+              360
+            ]
+          }
+        }
+      }
+    },
+    "animation.emerald_corruption_arrow.walk": {
+      "loop": true,
+      "animation_length": 0.6,
+      "bones": {
+        "head": {
+          "rotation": {
+            "0": [
+              0,
+              -4,
+              0
+            ],
+            "0.3": [
+              1.5,
+              4,
+              0
+            ],
+            "0.6": [
+              0,
+              -4,
+              0
+            ]
+          }
+        },
+        "root": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "0.6": [
+              0,
+              0,
+              360
+            ]
+          }
+        }
+      }
+    },
+    "animation.emerald_corruption_arrow.attack": {
+      "loop": false,
+      "animation_length": 0.75,
+      "bones": {
+        "head": {
+          "scale": {
+            "0": [
+              1,
+              1,
+              1
+            ],
+            "0.35": [
+              1.2,
+              1.2,
+              1.2
+            ],
+            "0.75": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    }
+  }
+}

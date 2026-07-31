@@ -1,0 +1,7 @@
+ArlightBosses 1.18.0 - VISUAL BOSSES CONTAINERS FIX
+
+- Somita: flequillo y cabello desplazados detrás de la cara; movimientos suavizados.
+- Guardián de la Superficie: dedos unidos correctamente a brazos y manos.
+- Cofres: ahora son contenedores reales de 27 espacios con menú, persistencia y tablas de botín.
+- Cofres: BlockEntity basado en RandomizableContainerBlockEntity, preparado para Lootr.
+- Cofres: animación nativa al abrir/cerrar incluso fuera de Bingo.

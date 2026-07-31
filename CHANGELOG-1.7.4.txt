@@ -1,0 +1,15 @@
+ArlightBosses 1.7.4 - COMPILE API FIX
+
+Errores corregidos: 17
+
+1) EmeraldCreeperMinion.java
+   - GENERIC_EXPLODE es Holder.Reference<SoundEvent> en Minecraft 1.21.1.
+   - Se cambió SoundEvents.GENERIC_EXPLODE por SoundEvents.GENERIC_EXPLODE.value().
+
+2) GildedBlazeWraithMinion.java
+   - setSecondsOnFire(int) no existe con los mappings oficiales de Minecraft 1.21.1.
+   - Se cambió por igniteForSeconds(4.0F).
+
+3) BossItems.java
+   - BuildCreativeModeTabContentsEvent#accept recibe el Item real.
+   - Se añadió .get() a los 15 DeferredHolder de huevos de spawn.

@@ -1,0 +1,27 @@
+ARLIGHTBOSSES 1.21.0 — WEAPON RIG + ATTACK OVERHAUL
+====================================================
+
+VANGUARDIA WITHER ÁUREO
+- Recentrado el pivote del brazo derecho para que no quede separado ni torcido.
+- Reducida la inclinación permanente del brazo y de la espada.
+- La espada conserva su hueso independiente y sigue correctamente a la mano.
+- El golpe contra el suelo ahora tiene 8 ticks de preparación: la animación ocurre
+  antes del daño, no después.
+
+GUARDIÁN DEL VACÍO
+- El arma ahora es hija del brazo derecho, en lugar de estar conectada a la raíz.
+- Ataque normal convertido en un corte claramente ejecutado con la mano armada.
+- Fase 1: carga, estocada y recuperación sincronizadas con el impacto.
+- Fase 2: tres cortes alternos con brazo, torso y arma coordinados.
+- Fase 3: alza el arma y la clava al suelo en el instante de abrir las grietas.
+- Idle, caminar, daño, rugido, transiciones y muerte conservan el arma en la mano.
+
+TODOS LOS ESBIRROS
+- El impacto cuerpo a cuerpo vuelve a disparar explícitamente la animación de ataque.
+  Esto evita que un mob golpee sin animarse si una ruta de IA no llama a swing().
+- Corregidos cuatro fotogramas fuera de duración en la animación de la flecha de
+  corrupción de esmeralda; ya no se corta ni reinicia antes de completar el ciclo.
+
+COMPATIBILIDAD
+- No cambia IDs, estadísticas, configuración, loot, campaña ni huevos de aparición.
+- Diseñado para conservar compatibilidad con ArlightBingo 1.31.0.

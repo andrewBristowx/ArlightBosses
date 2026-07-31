@@ -1,0 +1,11 @@
+VALIDACIÓN REALIZADA — ARLIGHTBOSSES 1.19.0
+=============================================
+
+- Todos los JSON de modelos, animaciones y blockstates: sintaxis válida.
+- Archivos Java modificados: pasados por la fase de análisis sintáctico de javac 21;
+  no se detectaron errores de estructura Java.
+
+LIMITACIÓN DEL ENTORNO
+- El ZIP fuente no contiene gradle-wrapper.jar y el contenedor no dispone de Gradle ni
+  dependencias NeoForge/GeckoLib, por lo que no fue posible producir el JAR aquí.
+- Compilar en IntelliJ con Java 21 mediante Gradle > build > build.
