@@ -27,6 +27,11 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Configurar Gradle 9.6.0
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
       - name: Descargar fuente estable 1.21.0
         shell: bash
         run: |
@@ -65,8 +70,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x ./gradlew
-          ./gradlew --no-daemon clean build
+          gradle --no-daemon clean build
 
       - name: Reunir JAR
         shell: bash
