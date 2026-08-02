@@ -1,0 +1,10 @@
+{
+  "key.categories.arlighttetris": "Arlight Tetris",
+  "key.arlighttetris.move_left": "Mover Izquierda",
+  "key.arlighttetris.move_right": "Mover Derecha",
+  "key.arlighttetris.soft_drop": "Caída Suave",
+  "key.arlighttetris.hard_drop": "Caída Rápida",
+  "key.arlighttetris.rotate_cw": "Rotar Horario",
+  "key.arlighttetris.rotate_ccw": "Rotar Antihorario",
+  "key.arlighttetris.hold": "Guardar Pieza"
+}

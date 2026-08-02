@@ -1,0 +1,10 @@
+{
+  "key.categories.arlighttetris": "Arlight Tetris",
+  "key.arlighttetris.move_left": "Move Left",
+  "key.arlighttetris.move_right": "Move Right",
+  "key.arlighttetris.soft_drop": "Soft Drop",
+  "key.arlighttetris.hard_drop": "Hard Drop",
+  "key.arlighttetris.rotate_cw": "Rotate Clockwise",
+  "key.arlighttetris.rotate_ccw": "Rotate Counter-clockwise",
+  "key.arlighttetris.hold": "Hold"
+}
