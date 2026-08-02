@@ -35,6 +35,7 @@ public final class TetrisOverlay implements LayeredDraw.Layer {
         drawNextQueue(graphics, board);
         drawStats(graphics, board);
         drawOpponents(graphics, screenWidth);
+        drawControls(graphics, screenWidth);
     }
 
     private void drawMatchBanner(GuiGraphics graphics, int screenWidth) {
@@ -123,6 +124,18 @@ public final class TetrisOverlay implements LayeredDraw.Layer {
         graphics.drawString(font, "Líneas: " + board.linesCleared(), textX, textY, 0xFFFFFF);
         if (board.combo() > 0) graphics.drawString(font, "Combo x" + board.combo(), textX, textY + 10, 0xFFD060);
         if (board.backToBack()) graphics.drawString(font, "Back-to-Back", textX, textY + 20, 0x60D0FF);
+    }
+
+    private void drawControls(GuiGraphics graphics, int screenWidth) {
+        if (!ClientGameState.isPlaying()) return;
+        int screenHeight = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+        var font = net.minecraft.client.Minecraft.getInstance().font;
+        graphics.drawCenteredString(font,
+                Component.literal("A/D o ←/→ mover · S o ↓ bajar · W o ↑ rotar · Espacio caída"),
+                screenWidth / 2, screenHeight - 34, 0xFFFFFFFF);
+        graphics.drawCenteredString(font,
+                Component.literal("Z giro izquierdo · C guardar · Esc disponible"),
+                screenWidth / 2, screenHeight - 22, 0xFFD8A8FF);
     }
 
     private void drawOpponents(GuiGraphics graphics, int screenWidth) {
