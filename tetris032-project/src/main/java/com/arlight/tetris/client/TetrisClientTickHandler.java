@@ -2,6 +2,7 @@ package com.arlight.tetris.client;
 
 import com.arlight.tetris.network.GameAction;
 import com.arlight.tetris.network.ServerboundGameActionPacket;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -14,12 +15,9 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Lee los controles de Tetris y captura los controles normales de Minecraft
- * mientras hay una partida activa.
- *
- * Además de las flechas configurables, acepta los controles de movimiento
- * actuales del jugador como alias: izquierda/derecha/atrás/adelante suelen
- * ser A/D/S/W. Espacio permanece como la caída inmediata predeterminada.
+ * Captura los controles de Tetris antes de que Minecraft los use.
+ * Incluye lectura directa de Espacio, C y Z como respaldo para evitar que
+ * otros mods o los controles vanilla consuman la pulsación.
  */
 @EventBusSubscriber(modid = "arlighttetris", value = Dist.CLIENT)
 public final class TetrisClientTickHandler {
@@ -37,6 +35,13 @@ public final class TetrisClientTickHandler {
     private static boolean vanillaSoftDropDown;
     private static int vanillaRotateClicks;
 
+    private static boolean rawHardDropWasDown;
+    private static boolean rawHoldWasDown;
+    private static boolean rawRotateCcwWasDown;
+    private static boolean rawHardDropPressed;
+    private static boolean rawHoldPressed;
+    private static boolean rawRotateCcwPressed;
+
     private TetrisClientTickHandler() {}
 
     @SubscribeEvent
@@ -45,21 +50,29 @@ public final class TetrisClientTickHandler {
         LocalPlayer player = minecraft.player;
 
         if (!shouldCapture(minecraft, player)) {
-            vanillaLeftDown = false;
-            vanillaRightDown = false;
-            vanillaSoftDropDown = false;
-            vanillaRotateClicks = 0;
+            resetRawState();
             return;
         }
 
         Options options = minecraft.options;
+        long window = minecraft.getWindow().getWindow();
 
-        // WASD (o las teclas de movimiento configuradas por el jugador)
-        // también controlan Tetris durante la partida.
         vanillaLeftDown = options.keyLeft.isDown();
         vanillaRightDown = options.keyRight.isDown();
         vanillaSoftDropDown = options.keyDown.isDown();
         vanillaRotateClicks += drainClicks(options.keyUp);
+
+        boolean hardDropDown = InputConstants.isKeyDown(window, InputConstants.KEY_SPACE);
+        boolean holdDown = InputConstants.isKeyDown(window, InputConstants.KEY_C);
+        boolean rotateCcwDown = InputConstants.isKeyDown(window, InputConstants.KEY_Z);
+
+        rawHardDropPressed = hardDropDown && !rawHardDropWasDown;
+        rawHoldPressed = holdDown && !rawHoldWasDown;
+        rawRotateCcwPressed = rotateCcwDown && !rawRotateCcwWasDown;
+
+        rawHardDropWasDown = hardDropDown;
+        rawHoldWasDown = holdDown;
+        rawRotateCcwWasDown = rotateCcwDown;
 
         suppressVanillaControls(options);
         stopPlayerMovement(player);
@@ -79,32 +92,28 @@ public final class TetrisClientTickHandler {
         handleHeld(TetrisKeyBindings.MOVE_RIGHT.isDown() || vanillaRightDown, false);
         handleSoftDrop(TetrisKeyBindings.SOFT_DROP.isDown() || vanillaSoftDropDown);
 
-        // Evita enviar dos giros si el jugador asignó la misma tecla a W y
-        // al keybind dedicado de rotación.
-        boolean rotatedClockwise = false;
-        while (TetrisKeyBindings.ROTATE_CW.consumeClick()) {
+        boolean rotatedClockwise = drainClicks(TetrisKeyBindings.ROTATE_CW) > 0;
+        if (rotatedClockwise) {
             sendAction(GameAction.ROTATE_CW);
-            rotatedClockwise = true;
-        }
-        if (!rotatedClockwise) {
-            while (vanillaRotateClicks-- > 0) {
-                sendAction(GameAction.ROTATE_CW);
-            }
+        } else if (vanillaRotateClicks > 0) {
+            sendAction(GameAction.ROTATE_CW);
         }
         vanillaRotateClicks = 0;
 
-        while (TetrisKeyBindings.ROTATE_CCW.consumeClick()) {
+        if (drainClicks(TetrisKeyBindings.ROTATE_CCW) > 0 || rawRotateCcwPressed) {
             sendAction(GameAction.ROTATE_CCW);
         }
-        while (TetrisKeyBindings.HARD_DROP.consumeClick()) {
+        if (drainClicks(TetrisKeyBindings.HARD_DROP) > 0 || rawHardDropPressed) {
             sendAction(GameAction.HARD_DROP);
         }
-        while (TetrisKeyBindings.HOLD.consumeClick()) {
+        if (drainClicks(TetrisKeyBindings.HOLD) > 0 || rawHoldPressed) {
             sendAction(GameAction.HOLD);
         }
 
-        // Elimina cualquier impulso horizontal que otro mod o el tick del
-        // jugador haya agregado después de la captura previa.
+        rawHardDropPressed = false;
+        rawHoldPressed = false;
+        rawRotateCcwPressed = false;
+
         stopPlayerMovement(player);
     }
 
@@ -120,7 +129,6 @@ public final class TetrisClientTickHandler {
         release(options.keyJump);
         release(options.keyShift);
         release(options.keySprint);
-
         release(options.keyAttack);
         release(options.keyUse);
         release(options.keyPickItem);
@@ -132,15 +140,13 @@ public final class TetrisClientTickHandler {
     private static void release(KeyMapping mapping) {
         mapping.setDown(false);
         while (mapping.consumeClick()) {
-            // Vacía pulsaciones pendientes para que no se ejecuten después.
+            // Vacía acciones normales pendientes.
         }
     }
 
     private static int drainClicks(KeyMapping mapping) {
         int clicks = 0;
-        while (mapping.consumeClick()) {
-            clicks++;
-        }
+        while (mapping.consumeClick()) clicks++;
         return clicks;
     }
 
@@ -155,25 +161,32 @@ public final class TetrisClientTickHandler {
         player.setDeltaMovement(0.0D, velocity.y, 0.0D);
     }
 
-    private static void resetRepeatState() {
-        leftHeldTicks = 0;
-        rightHeldTicks = 0;
-        softDropTicks = 0;
+    private static void resetRawState() {
         vanillaLeftDown = false;
         vanillaRightDown = false;
         vanillaSoftDropDown = false;
         vanillaRotateClicks = 0;
+        rawHardDropWasDown = false;
+        rawHoldWasDown = false;
+        rawRotateCcwWasDown = false;
+        rawHardDropPressed = false;
+        rawHoldPressed = false;
+        rawRotateCcwPressed = false;
+    }
+
+    private static void resetRepeatState() {
+        leftHeldTicks = 0;
+        rightHeldTicks = 0;
+        softDropTicks = 0;
+        resetRawState();
     }
 
     private static void handleHeld(boolean isDown, boolean isLeft) {
         int ticks = isLeft ? leftHeldTicks : rightHeldTicks;
 
         if (!isDown) {
-            if (isLeft) {
-                leftHeldTicks = 0;
-            } else {
-                rightHeldTicks = 0;
-            }
+            if (isLeft) leftHeldTicks = 0;
+            else rightHeldTicks = 0;
             return;
         }
 
@@ -182,11 +195,8 @@ public final class TetrisClientTickHandler {
         }
 
         ticks++;
-        if (isLeft) {
-            leftHeldTicks = ticks;
-        } else {
-            rightHeldTicks = ticks;
-        }
+        if (isLeft) leftHeldTicks = ticks;
+        else rightHeldTicks = ticks;
     }
 
     private static void handleSoftDrop(boolean isDown) {
