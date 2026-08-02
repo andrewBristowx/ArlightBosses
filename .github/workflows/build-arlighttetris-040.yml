@@ -52,8 +52,6 @@ jobs:
               overlay.b64.part11|overlay.b64.part16) continue ;;
             esac
             base64 -d "$file" > "/tmp/arlighttetris040-parts/$name"
-            printf '%s ' "$name"
-            sha256sum "/tmp/arlighttetris040-parts/$name" | cut -d' ' -f1
           done
 
           cat /tmp/arlighttetris040-parts/overlay.b64.part* > /tmp/arlighttetris040-overlay.tar.gz
@@ -64,8 +62,8 @@ jobs:
           test -f work/arlighttetris/settings.gradle
           test -f work/arlighttetris/src/main/resources/assets/arlighttetris/textures/gui/tetris_waiting_background.png
           grep -q "version = '0.4.0'" work/arlighttetris/build.gradle
-          grep -q 'elapsedMinutes' work/arlighttetris/src/main/java/com/arlight/tetris/game/GameSession.java
-          grep -q 'getSlotPosition' work/arlighttetris/src/main/java/com/arlight/tetris/world/TetrisArena.java
+          grep -q 'getGravityIntervalTicks' work/arlighttetris/src/main/java/com/arlight/tetris/game/GameSession.java
+          grep -q 'podCenter' work/arlighttetris/src/main/java/com/arlight/tetris/world/TetrisArena.java
           grep -q 'drawWaitingScreen' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisOverlay.java
           grep -q 'enforceAssignedSlots' work/arlighttetris/src/main/java/com/arlight/tetris/world/ArenaMatchListener.java
 
