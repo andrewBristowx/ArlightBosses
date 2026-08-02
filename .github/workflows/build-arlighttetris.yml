@@ -75,7 +75,32 @@ jobs:
 
       - name: Build ArlightTetris
         working-directory: work/arlighttetris
-        run: gradle --no-daemon clean build --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon --console=plain clean build --stacktrace 2>&1 | tee /tmp/arlighttetris-build.log
+
+      - name: Extract compiler errors
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/arlighttetris-build.log ]; then
+            grep -nE '(^|[^a-zA-Z])(error:|FAILURE:|What went wrong:|Execution failed|cannot find symbol|incompatible types|has private access|is not abstract|does not override)' /tmp/arlighttetris-build.log > /tmp/arlighttetris-errors.txt || true
+            tail -n 400 /tmp/arlighttetris-build.log >> /tmp/arlighttetris-errors.txt
+          else
+            echo 'No se generó el log de Gradle.' > /tmp/arlighttetris-errors.txt
+          fi
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightTetris-build-diagnostics
+          path: |
+            /tmp/arlighttetris-build.log
+            /tmp/arlighttetris-errors.txt
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Show generated files
         if: success()
