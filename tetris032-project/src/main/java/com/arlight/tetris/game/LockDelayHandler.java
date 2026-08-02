@@ -1,8 +1,12 @@
 package com.arlight.tetris.game;
 
+/**
+ * Demora breve al tocar el suelo. Ocho ticks equivalen a 0.4 segundos:
+ * permite un último ajuste sin hacer esperar demasiado a la siguiente pieza.
+ */
 public class LockDelayHandler {
-    public static final int LOCK_DELAY_TICKS = 30;
-    public static final int MAX_RESETS = 15;
+    public static final int LOCK_DELAY_TICKS = 8;
+    public static final int MAX_RESETS = 8;
 
     private int ticksRemaining = LOCK_DELAY_TICKS;
     private int resetsUsed = 0;
