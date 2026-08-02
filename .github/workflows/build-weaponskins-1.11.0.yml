@@ -50,6 +50,14 @@ jobs:
           sed -i "/compileOnly files('libs\/ArlightChatClient/d" work/build.gradle
           sed -i "/compileOnly files('libs\/ArlightCosmeticsCurios/d" work/build.gradle
 
+          cat >> work/build.gradle <<'GRADLE'
+
+          tasks.named('jar') {
+              exclude 'com/arlight/chatclient/**'
+              exclude 'com/arlight/cosmeticscurios/**'
+          }
+          GRADLE
+
           mkdir -p work/src/main/java/com/arlight/chatclient
           cat > work/src/main/java/com/arlight/chatclient/CosmeticSlot.java <<'JAVA'
           package com.arlight.chatclient;
@@ -97,6 +105,18 @@ jobs:
         run: |
           set -o pipefail
           gradle --no-daemon clean build --stacktrace 2>&1 | tee ../weaponskins-build.log
+
+      - name: Verify final JAR has no CI stubs
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find work/build/libs -maxdepth 1 -name '*.jar' | head -n 1)"
+          test -n "$JAR"
+          if jar tf "$JAR" | grep -Eq '^com/arlight/(chatclient|cosmeticscurios)/'; then
+            echo 'El JAR contiene clases temporales de CI.' >&2
+            exit 1
+          fi
 
       - name: Upload JAR
         if: success()
