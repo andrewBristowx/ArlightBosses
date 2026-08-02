@@ -1,0 +1,111 @@
+name: Build ArlightWeaponSkins 1.11.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/compile-weaponskins-1.11.0
+    paths:
+      - 'weaponskins-ci/**'
+      - '.github/workflows/build-weaponskins-1.11.0.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Restore source and add compile-only stubs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work
+          tr -d '[:space:]' < weaponskins-ci/source.b64 | base64 --decode > /tmp/weaponskins.zip
+          echo '8abb468e61bf40d1bb45c361955e19fc4798222b7b17f5a3a5f8eaac268c7c71  /tmp/weaponskins.zip' | sha256sum --check -
+          unzip -q /tmp/weaponskins.zip -d work
+
+          sed -i "/compileOnly files('libs\/ArlightChatClient/d" work/build.gradle
+          sed -i "/compileOnly files('libs\/ArlightCosmeticsCurios/d" work/build.gradle
+
+          mkdir -p work/src/main/java/com/arlight/chatclient
+          cat > work/src/main/java/com/arlight/chatclient/CosmeticSlot.java <<'JAVA'
+          package com.arlight.chatclient;
+          public enum CosmeticSlot {
+              HEAD, OUTFIT, BACK, TAIL, SHOULDER, AURA, TRAIL, WEAPON_SKIN,
+              WEAPON_SWORD, WEAPON_PICKAXE, WEAPON_AXE, WEAPON_SHOVEL, WEAPON_HOE, WEAPON_BOW
+          }
+          JAVA
+
+          cat > work/src/main/java/com/arlight/chatclient/ClientCosmeticsState.java <<'JAVA'
+          package com.arlight.chatclient;
+          import java.util.Map;
+          import java.util.UUID;
+          public final class ClientCosmeticsState {
+              private ClientCosmeticsState() { }
+              public static Loadout get(UUID owner) { return null; }
+              public record Loadout(Map<CosmeticSlot, String> equipped, boolean visible) { }
+          }
+          JAVA
+
+          cat > work/src/main/java/com/arlight/chatclient/WardrobeState.java <<'JAVA'
+          package com.arlight.chatclient;
+          import java.util.Map;
+          public final class WardrobeState {
+              private WardrobeState() { }
+              public static Map<String, String> equipped() { return Map.of(); }
+          }
+          JAVA
+
+          mkdir -p work/src/main/java/com/arlight/cosmeticscurios
+          cat > work/src/main/java/com/arlight/cosmeticscurios/OwnerBoundCosmeticItem.java <<'JAVA'
+          package com.arlight.cosmeticscurios;
+          import net.minecraft.world.item.Item;
+          import top.theillusivec4.curios.api.type.capability.ICurioItem;
+          public class OwnerBoundCosmeticItem extends Item implements ICurioItem {
+              public OwnerBoundCosmeticItem(Properties properties, String slotId, String claimId) {
+                  super(properties);
+              }
+          }
+          JAVA
+
+      - name: Build
+        working-directory: work
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon clean build --stacktrace 2>&1 | tee ../weaponskins-build.log
+
+      - name: Upload JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightWeaponSkins-1.11.0
+          path: work/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightWeaponSkins-1.11.0-diagnostics
+          path: weaponskins-build.log
+          if-no-files-found: warn
+          retention-days: 7
