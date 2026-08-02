@@ -8,6 +8,12 @@ on:
     paths:
       - 'weaponskins-ci/**'
       - '.github/workflows/build-weaponskins-1.11.0.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'weaponskins-ci/**'
+      - '.github/workflows/build-weaponskins-1.11.0.yml'
 
 permissions:
   contents: read
