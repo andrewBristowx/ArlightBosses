@@ -1,0 +1,51 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.0.165'
+}
+
+version = '0.3.2'
+group = 'com.arlight.tetris'
+
+base {
+    archivesName = 'arlighttetris'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenCentral()
+}
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.main
+    }
+    client { }
+    server { argument '--nogui' }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+    implementation "net.neoforged:neoforge:21.1.83"
+
+    // La integración con ArlightCore usa reflexión y el classloader del plugin.
+    // Así el mod no enlaza directamente clases Bukkit/ArlightCore y funciona
+    // tanto en Arclight como en un servidor NeoForge puro.
+
+    // GeckoLib se agrega si más adelante se usa para efectos de piezas
+    // (animaciones al limpiar líneas, etc.) — no es necesario para el
+    // motor de juego ni para el tablero base.
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    def replaceProperties = [minecraft_version: '1.21.1', neo_version: '21.1.83', mod_version: project.version]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
+}
