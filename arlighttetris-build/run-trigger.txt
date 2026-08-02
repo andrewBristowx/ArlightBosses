@@ -1,2 +1,2 @@
 Compilar ArlightTetris 0.3.0 con Java 21, NeoForge 21.1.83 y ArlightCore 1.22.0.
-Diagnóstico de fragmentos: ejecución 2.
+Fragmentos corregidos y verificados: ejecución 3.
