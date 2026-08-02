@@ -5,7 +5,7 @@ plugins {
     id 'net.neoforged.gradle.userdev' version '7.0.165'
 }
 
-version = '0.3.2'
+version = '0.3.3'
 group = 'com.arlight.tetris'
 
 base {
@@ -36,10 +36,6 @@ dependencies {
     // La integración con ArlightCore usa reflexión y el classloader del plugin.
     // Así el mod no enlaza directamente clases Bukkit/ArlightCore y funciona
     // tanto en Arclight como en un servidor NeoForge puro.
-
-    // GeckoLib se agrega si más adelante se usa para efectos de piezas
-    // (animaciones al limpiar líneas, etc.) — no es necesario para el
-    // motor de juego ni para el tablero base.
 }
 
 tasks.named('processResources', ProcessResources).configure {
