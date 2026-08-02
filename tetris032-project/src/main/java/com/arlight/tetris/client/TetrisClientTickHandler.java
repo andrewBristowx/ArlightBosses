@@ -19,7 +19,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *
  * Además de las flechas configurables, acepta los controles de movimiento
  * actuales del jugador como alias: izquierda/derecha/atrás/adelante suelen
- * ser A/D/S/W. Espacio usa el mismo botón configurado para saltar.
+ * ser A/D/S/W. Espacio permanece como la caída inmediata predeterminada.
  */
 @EventBusSubscriber(modid = "arlighttetris", value = Dist.CLIENT)
 public final class TetrisClientTickHandler {
@@ -36,15 +36,9 @@ public final class TetrisClientTickHandler {
     private static boolean vanillaRightDown;
     private static boolean vanillaSoftDropDown;
     private static int vanillaRotateClicks;
-    private static int vanillaHardDropClicks;
 
     private TetrisClientTickHandler() {}
 
-    /**
-     * Se ejecuta antes del tick del jugador. Primero guarda las pulsaciones
-     * que Tetris necesita y después desactiva los controles vanilla, evitando
-     * que el personaje camine, salte, corra, ataque o abra el inventario.
-     */
     @SubscribeEvent
     public static void onClientTickPre(ClientTickEvent.Pre event) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -55,7 +49,6 @@ public final class TetrisClientTickHandler {
             vanillaRightDown = false;
             vanillaSoftDropDown = false;
             vanillaRotateClicks = 0;
-            vanillaHardDropClicks = 0;
             return;
         }
 
@@ -67,7 +60,6 @@ public final class TetrisClientTickHandler {
         vanillaRightDown = options.keyRight.isDown();
         vanillaSoftDropDown = options.keyDown.isDown();
         vanillaRotateClicks += drainClicks(options.keyUp);
-        vanillaHardDropClicks += drainClicks(options.keyJump);
 
         suppressVanillaControls(options);
         stopPlayerMovement(player);
@@ -87,11 +79,17 @@ public final class TetrisClientTickHandler {
         handleHeld(TetrisKeyBindings.MOVE_RIGHT.isDown() || vanillaRightDown, false);
         handleSoftDrop(TetrisKeyBindings.SOFT_DROP.isDown() || vanillaSoftDropDown);
 
+        // Evita enviar dos giros si el jugador asignó la misma tecla a W y
+        // al keybind dedicado de rotación.
+        boolean rotatedClockwise = false;
         while (TetrisKeyBindings.ROTATE_CW.consumeClick()) {
             sendAction(GameAction.ROTATE_CW);
+            rotatedClockwise = true;
         }
-        while (vanillaRotateClicks-- > 0) {
-            sendAction(GameAction.ROTATE_CW);
+        if (!rotatedClockwise) {
+            while (vanillaRotateClicks-- > 0) {
+                sendAction(GameAction.ROTATE_CW);
+            }
         }
         vanillaRotateClicks = 0;
 
@@ -101,11 +99,6 @@ public final class TetrisClientTickHandler {
         while (TetrisKeyBindings.HARD_DROP.consumeClick()) {
             sendAction(GameAction.HARD_DROP);
         }
-        while (vanillaHardDropClicks-- > 0) {
-            sendAction(GameAction.HARD_DROP);
-        }
-        vanillaHardDropClicks = 0;
-
         while (TetrisKeyBindings.HOLD.consumeClick()) {
             sendAction(GameAction.HOLD);
         }
@@ -170,7 +163,6 @@ public final class TetrisClientTickHandler {
         vanillaRightDown = false;
         vanillaSoftDropDown = false;
         vanillaRotateClicks = 0;
-        vanillaHardDropClicks = 0;
     }
 
     private static void handleHeld(boolean isDown, boolean isLeft) {
