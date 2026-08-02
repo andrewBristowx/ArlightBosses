@@ -43,12 +43,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Las copias históricas pueden contener algún carácter de transporte
-          # fuera del alfabeto Base64. Se conserva exclusivamente Base64 antes
-          # de reconstruir y luego unzip valida de forma estricta el resultado.
-          cat arlighttetris-build/source.part00 arlighttetris-build/source.part01 \
-            | tr -cd 'A-Za-z0-9+/=' > /tmp/arlighttetris.b64
-          base64 --decode /tmp/arlighttetris.b64 > /tmp/arlighttetris.zip
+          # Cada archivo es un fragmento binario codificado de manera
+          # independiente, por lo que se decodifica antes de concatenarlo.
+          tr -cd 'A-Za-z0-9+/=' < arlighttetris-build/source.part00 \
+            | base64 --decode > /tmp/arlighttetris.part00
+          tr -cd 'A-Za-z0-9+/=' < arlighttetris-build/source.part01 \
+            | base64 --decode > /tmp/arlighttetris.part01
+          cat /tmp/arlighttetris.part00 /tmp/arlighttetris.part01 > /tmp/arlighttetris.zip
           unzip -t /tmp/arlighttetris.zip >/dev/null
           mkdir -p work
           unzip -q /tmp/arlighttetris.zip -d work
