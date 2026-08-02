@@ -1,0 +1,25 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "All rights reserved"
+issueTrackerURL = ""
+
+[[mods]]
+modId = "arlighttetris"
+version = "${mod_version}"
+displayName = "Arlight Tetris"
+description = '''Minijuego de Tetris para Arlight: multijugador de 2-8 jugadores y modo de prueba individual para administradores.'''
+authors = "Arlight"
+
+[[dependencies.arlighttetris]]
+    modId = "neoforge"
+    type = "required"
+    versionRange = "[21.1,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.arlighttetris]]
+    modId = "minecraft"
+    type = "required"
+    versionRange = "[1.21.1,1.22)"
+    ordering = "NONE"
+    side = "BOTH"
