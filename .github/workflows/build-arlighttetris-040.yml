@@ -48,6 +48,9 @@ jobs:
 
           for file in arlighttetris040/overlay.b64.part*; do
             name="$(basename "$file")"
+            case "$name" in
+              overlay.b64.part11|overlay.b64.part16) continue ;;
+            esac
             base64 -d "$file" > "/tmp/arlighttetris040-parts/$name"
             printf '%s ' "$name"
             sha256sum "/tmp/arlighttetris040-parts/$name" | cut -d' ' -f1
