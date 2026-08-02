@@ -1,4 +1,4 @@
-name: Build ArlightTetris 0.3.3
+name: Build ArlightTetris 0.3.4
 
 on:
   workflow_dispatch:
@@ -49,10 +49,11 @@ jobs:
           cp -a arlighttetris-build/patches/. work/arlighttetris/
           test -f work/arlighttetris/build.gradle
           test -f work/arlighttetris/settings.gradle
-          grep -q "version = '0.3.3'" work/arlighttetris/build.gradle
-          grep -q 'TETRIS_ONLY' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisKeyBindings.java
-          grep -q 'suppressVanillaControls' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisClientTickHandler.java
-          grep -q 'drawControls' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisOverlay.java
+          grep -q "version = '0.3.4'" work/arlighttetris/build.gradle
+          grep -q 'GRAVITY_TICKS_BY_LEVEL' work/arlighttetris/src/main/java/com/arlight/tetris/game/GameSession.java
+          grep -q 'getScore' work/arlighttetris/src/main/java/com/arlight/tetris/game/GameSession.java
+          grep -q 'rawHardDropPressed' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisClientTickHandler.java
+          grep -q 'Puntos:' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisOverlay.java
 
       - name: Build ArlightTetris
         working-directory: work/arlighttetris
@@ -68,19 +69,20 @@ jobs:
           set -euo pipefail
           JAR="$(find work/arlighttetris/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -n 1)"
           test -n "$JAR"
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/game/GameSession.class'
           jar tf "$JAR" | grep -q 'com/arlight/tetris/client/TetrisClientTickHandler.class'
-          jar tf "$JAR" | grep -q 'com/arlight/tetris/client/TetrisKeyBindings.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/network/ClientboundBoardStatePacket.class'
           jar tf "$JAR" | grep -q 'com/arlight/tetris/integration/ArlightCoreIntegration.class'
-          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -Eq 'version[[:space:]]*=[[:space:]]*"0\.3\.3"'
-          cp "$JAR" work/ArlightTetris-0.3.3.jar
-          sha256sum work/ArlightTetris-0.3.3.jar
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -Eq 'version[[:space:]]*=[[:space:]]*"0\.3\.4"'
+          cp "$JAR" work/ArlightTetris-0.3.4.jar
+          sha256sum work/ArlightTetris-0.3.4.jar
 
       - name: Upload ArlightTetris JAR
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ArlightTetris-0.3.3
-          path: work/ArlightTetris-0.3.3.jar
+          name: ArlightTetris-0.3.4
+          path: work/ArlightTetris-0.3.4.jar
           if-no-files-found: error
           retention-days: 7
 
@@ -88,7 +90,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ArlightTetris-0.3.3-diagnostics
+          name: ArlightTetris-0.3.4-diagnostics
           path: /tmp/arlighttetris-build.log
           if-no-files-found: warn
           retention-days: 7
