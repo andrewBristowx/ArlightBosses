@@ -29,6 +29,8 @@ public final class NetworkSender {
                 session.getHoldPiece() == null ? -1 : session.getHoldPiece().ordinal(),
                 session.encodeNextQueue(5),
                 session.getLinesCleared(),
+                session.getScore(),
+                session.getLevel(),
                 Math.max(session.getComboCount(), 0),
                 session.isBackToBack(),
                 session.isTopOut()
