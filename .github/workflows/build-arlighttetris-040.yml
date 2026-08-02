@@ -42,11 +42,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p work/arlighttetris
+          mkdir -p work/arlighttetris /tmp/arlighttetris040-parts
           cp -a tetris032-project/. work/arlighttetris/
           cp -a arlighttetris-build/patches/. work/arlighttetris/
 
-          cat arlighttetris040/overlay.b64.part* | base64 -d > /tmp/arlighttetris040-overlay.tar.gz
+          for file in arlighttetris040/overlay.b64.part*; do
+            name="$(basename "$file")"
+            base64 -d "$file" > "/tmp/arlighttetris040-parts/$name"
+            printf '%s ' "$name"
+            sha256sum "/tmp/arlighttetris040-parts/$name" | cut -d' ' -f1
+          done
+
+          cat /tmp/arlighttetris040-parts/overlay.b64.part* > /tmp/arlighttetris040-overlay.tar.gz
           echo '28653b9d855eb1a91ac83ba8716e43ceec6e5cb6ba568149b1861b1f4a696e24  /tmp/arlighttetris040-overlay.tar.gz' | sha256sum -c -
           tar -xzf /tmp/arlighttetris040-overlay.tar.gz -C work/arlighttetris
 
