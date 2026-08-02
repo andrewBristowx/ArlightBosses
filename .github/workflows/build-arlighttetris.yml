@@ -9,6 +9,13 @@ on:
       - 'tetris032-project/**'
       - 'arlighttetris-build/patches/**'
       - '.github/workflows/build-arlighttetris.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tetris032-project/**'
+      - 'arlighttetris-build/patches/**'
+      - '.github/workflows/build-arlighttetris.yml'
 
 permissions:
   contents: read
