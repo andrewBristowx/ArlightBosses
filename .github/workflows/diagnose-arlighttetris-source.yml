@@ -1,0 +1,54 @@
+name: Diagnose ArlightTetris source chunks
+
+on:
+  pull_request:
+    branches:
+      - agent/compile-arlighttetris-v0.3.0
+    paths:
+      - 'arlighttetris-build/**'
+      - '.github/workflows/diagnose-arlighttetris-source.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check normalized fragment hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=(
+            c6d532d5bd743b59486f9951b8f2f708e98d38883b284fb7711d2b1d24d4f517
+            984c4a6256f262f66299d0abb6cedc47b2bd17a81fa13c9c46314fc980eb3dd2
+            f013d82b5515158be2715121c1c71b4a57ed2774acb796e4dd417427625bb29b
+            0fdd4e53afdac03f1277bfac21b3bcf74505d71cfe1e51330c76def3e2106b31
+            189bd5ac5cd87927afcac9b75ac9b0d45ff9b139900242667da43dca1ee77c09
+            05f23427acb95f49779618cb1ffed1ecce8d9b2f1ec74db4a6476df613c7f96f
+            8cb0f2a8cdd6cab58679126b9f1d08275739d2be9b60bac4e18fad487e3b18fe
+            a55e2878d85a9df65b7c9303f2d3db3c2bf4238403da98898d3073e1695c0840
+            f28feb8c7c6c305b32c1a7ea5646d1450be04cb174fb8649d5fe13aaf4faaa98
+          )
+          failed=0
+          for i in $(seq -w 0 8); do
+            file="arlighttetris-build/chunks/part${i}"
+            normalized="/tmp/part${i}.normalized"
+            tr -d '[:space:]' < "$file" > "$normalized"
+            actual=$(sha256sum "$normalized" | cut -d' ' -f1)
+            size=$(wc -c < "$normalized")
+            index=$((10#$i))
+            echo "part${i} size=${size} actual=${actual} expected=${expected[$index]}"
+            if [ "$actual" != "${expected[$index]}" ]; then
+              failed=1
+              python3 - "$file" <<'PY'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1])
+s = p.read_text()
+valid = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\r\n\t ')
+print('invalid_chars=', repr(sorted(set(s) - valid)))
+PY
+            fi
+          done
+          exit "$failed"
