@@ -11,7 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 public record ClientboundBoardStatePacket(
         byte[] grid, int currentType, int currentX, int currentY,
         int currentRotation, int ghostY, int holdType, byte[] nextQueue,
-        int linesCleared, int combo, boolean backToBack, boolean topOut
+        int linesCleared, int score, int level, int combo,
+        boolean backToBack, boolean topOut
 ) implements CustomPacketPayload {
 
     private static final StreamCodec<ByteBuf, byte[]> GRID_CODEC =
@@ -26,12 +27,20 @@ public record ClientboundBoardStatePacket(
         public ClientboundBoardStatePacket decode(ByteBuf buffer) {
             return new ClientboundBoardStatePacket(
                     GRID_CODEC.decode(buffer),
-                    ByteBufCodecs.VAR_INT.decode(buffer), ByteBufCodecs.VAR_INT.decode(buffer),
-                    ByteBufCodecs.VAR_INT.decode(buffer), ByteBufCodecs.VAR_INT.decode(buffer),
-                    ByteBufCodecs.VAR_INT.decode(buffer), ByteBufCodecs.VAR_INT.decode(buffer),
-                    NEXT_QUEUE_CODEC.decode(buffer), ByteBufCodecs.VAR_INT.decode(buffer),
-                    ByteBufCodecs.VAR_INT.decode(buffer), ByteBufCodecs.BOOL.decode(buffer),
-                    ByteBufCodecs.BOOL.decode(buffer));
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    NEXT_QUEUE_CODEC.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.VAR_INT.decode(buffer),
+                    ByteBufCodecs.BOOL.decode(buffer),
+                    ByteBufCodecs.BOOL.decode(buffer)
+            );
         }
 
         @Override
@@ -45,11 +54,16 @@ public record ClientboundBoardStatePacket(
             ByteBufCodecs.VAR_INT.encode(buffer, value.holdType());
             NEXT_QUEUE_CODEC.encode(buffer, value.nextQueue());
             ByteBufCodecs.VAR_INT.encode(buffer, value.linesCleared());
+            ByteBufCodecs.VAR_INT.encode(buffer, value.score());
+            ByteBufCodecs.VAR_INT.encode(buffer, value.level());
             ByteBufCodecs.VAR_INT.encode(buffer, value.combo());
             ByteBufCodecs.BOOL.encode(buffer, value.backToBack());
             ByteBufCodecs.BOOL.encode(buffer, value.topOut());
         }
     };
 
-    @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
 }
