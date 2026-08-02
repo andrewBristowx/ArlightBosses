@@ -1,0 +1,100 @@
+name: Build ArlightTetris 0.4.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/compile-arlighttetris-0.4.0-build
+    paths:
+      - 'arlighttetris040/**'
+      - '.github/workflows/build-arlighttetris-040.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'arlighttetris040/**'
+      - '.github/workflows/build-arlighttetris-040.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Prepare verified source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/arlighttetris
+          cp -a tetris032-project/. work/arlighttetris/
+          cp -a arlighttetris-build/patches/. work/arlighttetris/
+
+          cat arlighttetris040/overlay.b64.part* | base64 -d > /tmp/arlighttetris040-overlay.tar.gz
+          echo '28653b9d855eb1a91ac83ba8716e43ceec6e5cb6ba568149b1861b1f4a696e24  /tmp/arlighttetris040-overlay.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/arlighttetris040-overlay.tar.gz -C work/arlighttetris
+
+          test -f work/arlighttetris/build.gradle
+          test -f work/arlighttetris/settings.gradle
+          test -f work/arlighttetris/src/main/resources/assets/arlighttetris/textures/gui/tetris_waiting_background.png
+          grep -q "version = '0.4.0'" work/arlighttetris/build.gradle
+          grep -q 'elapsedMinutes' work/arlighttetris/src/main/java/com/arlight/tetris/game/GameSession.java
+          grep -q 'getSlotPosition' work/arlighttetris/src/main/java/com/arlight/tetris/world/TetrisArena.java
+          grep -q 'drawWaitingScreen' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisOverlay.java
+          grep -q 'enforceAssignedSlots' work/arlighttetris/src/main/java/com/arlight/tetris/world/ArenaMatchListener.java
+
+      - name: Build ArlightTetris
+        working-directory: work/arlighttetris
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon clean build --stacktrace 2>&1 | tee /tmp/arlighttetris-build.log
+
+      - name: Verify final JAR
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find work/arlighttetris/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -n 1)"
+          test -n "$JAR"
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/client/TetrisOverlay.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/world/TetrisArenaBuilder.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/world/ArenaMatchListener.class'
+          jar tf "$JAR" | grep -q 'assets/arlighttetris/textures/gui/tetris_waiting_background.png'
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -Eq 'version[[:space:]]*=[[:space:]]*"0\.4\.0"'
+          cp "$JAR" work/ArlightTetris-0.4.0.jar
+          sha256sum work/ArlightTetris-0.4.0.jar
+
+      - name: Upload ArlightTetris JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightTetris-0.4.0
+          path: work/ArlightTetris-0.4.0.jar
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightTetris-0.4.0-diagnostics
+          path: /tmp/arlighttetris-build.log
+          if-no-files-found: warn
+          retention-days: 7
