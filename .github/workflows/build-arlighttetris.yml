@@ -6,11 +6,12 @@ on:
     branches:
       - agent/compile-arlighttetris-v0.3.0
     paths:
-      - 'arlighttetris-build/**'
+      - 'arlighttetris-build/chunks/**'
+      - 'arlighttetris-build/patches/**'
       - '.github/workflows/build-arlighttetris.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -56,11 +57,17 @@ jobs:
           test -f work/arlighttetris/settings.gradle
 
       - name: Install ArlightCore 1.22.0 locally
-        run: mvn -B -f arlightcore/pom.xml -DskipTests install
+        shell: bash
+        run: |
+          set -o pipefail
+          mvn -B -f arlightcore/pom.xml -DskipTests install 2>&1 | tee /tmp/arlightcore-build.log
 
       - name: Build ArlightTetris
         working-directory: work/arlighttetris
-        run: gradle --no-daemon clean build --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon clean build --stacktrace 2>&1 | tee /tmp/arlighttetris-build.log
 
       - name: Show generated files
         if: success()
@@ -74,3 +81,38 @@ jobs:
           path: work/arlighttetris/build/libs/*.jar
           if-no-files-found: error
           retention-days: 7
+
+      - name: Record build status and logs
+        if: always()
+        shell: bash
+        env:
+          BUILD_STATUS: ${{ job.status }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          mkdir -p arlighttetris-results
+          {
+            echo "run_id=${RUN_ID}"
+            echo "run_attempt=${RUN_ATTEMPT}"
+            echo "status=${BUILD_STATUS}"
+            echo "commit=${GITHUB_SHA}"
+          } > arlighttetris-results/status.txt
+          {
+            if [ -f /tmp/arlightcore-build.log ]; then
+              echo '===== ARLIGHTCORE ====='
+              tail -n 500 /tmp/arlightcore-build.log
+            fi
+            if [ -f /tmp/arlighttetris-build.log ]; then
+              echo '===== ARLIGHTTETRIS ====='
+              tail -n 1200 /tmp/arlighttetris-build.log
+            fi
+          } > arlighttetris-results/last-build.log
+          if compgen -G 'work/arlighttetris/build/libs/*.jar' > /dev/null; then
+            sha256sum work/arlighttetris/build/libs/*.jar > arlighttetris-results/jars.sha256
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add arlighttetris-results
+          git commit -m "Registrar compilación ArlightTetris ${RUN_ID} [skip ci]" || exit 0
+          git push origin HEAD:agent/compile-arlighttetris-v0.3.0
