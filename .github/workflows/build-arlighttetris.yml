@@ -34,23 +34,48 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Set up Gradle 8.10.2
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
-
       - name: Restore and verify ArlightTetris source
         shell: bash
         run: |
           set -euo pipefail
-          # Cada archivo es un fragmento binario codificado de manera
-          # independiente, por lo que se decodifica antes de concatenarlo.
-          tr -cd 'A-Za-z0-9+/=' < arlighttetris-build/source.part00 \
-            | base64 --decode > /tmp/arlighttetris.part00
-          tr -cd 'A-Za-z0-9+/=' < arlighttetris-build/source.part01 \
-            | base64 --decode > /tmp/arlighttetris.part01
-          cat /tmp/arlighttetris.part00 /tmp/arlighttetris.part01 > /tmp/arlighttetris.zip
-          unzip -t /tmp/arlighttetris.zip >/dev/null
+          python3 - <<'PY'
+          import base64
+          import re
+          import zipfile
+          from pathlib import Path
+
+          paths = [Path('arlighttetris-build/source.part00'),
+                   Path('arlighttetris-build/source.part01')]
+          clean = [re.sub(rb'[^A-Za-z0-9+/=]', b'', p.read_bytes()) for p in paths]
+
+          def padded(value: bytes) -> bytes:
+              value = value.replace(b'=', b'')
+              return value + b'=' * ((-len(value)) % 4)
+
+          candidates = []
+          # Formato 1: fragmentos de una única cadena Base64.
+          candidates.append(('continuous', base64.b64decode(padded(b''.join(clean)), validate=False)))
+          # Formato 2: cada fragmento codifica una porción binaria independiente.
+          try:
+              candidates.append(('independent', b''.join(
+                  base64.b64decode(padded(part), validate=False) for part in clean)))
+          except Exception:
+              pass
+
+          output = Path('/tmp/arlighttetris.zip')
+          for mode, data in candidates:
+              output.write_bytes(data)
+              try:
+                  with zipfile.ZipFile(output) as archive:
+                      if archive.testzip() is None and 'arlighttetris/build.gradle' in archive.namelist():
+                          print(f'Reconstrucción válida: {mode}, bytes={len(data)}')
+                          break
+              except Exception as exc:
+                  print(f'Candidato {mode} inválido: {exc}')
+          else:
+              raise SystemExit('Ningún método reconstruyó un ZIP válido')
+          PY
+
           mkdir -p work
           unzip -q /tmp/arlighttetris.zip -d work
           cp -a arlighttetris-build/patches/. work/arlighttetris/
@@ -60,6 +85,11 @@ jobs:
           grep -q 'startSoloTest' work/arlighttetris/src/main/java/com/arlight/tetris/multiplayer/LobbyManager.java
           grep -q 'ArlightTetris registrado y verificado' work/arlighttetris/src/main/java/com/arlight/tetris/integration/ArlightCoreIntegration.java
           sha256sum /tmp/arlighttetris.zip
+
+      - name: Set up Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
 
       - name: Build ArlightTetris
         working-directory: work/arlighttetris
