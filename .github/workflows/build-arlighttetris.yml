@@ -6,14 +6,15 @@ on:
     branches:
       - agent/compile-arlighttetris-0.3.2-build
     paths:
-      - 'arlighttetris-build/source.part*'
+      - 'tetris032-project/**'
       - 'arlighttetris-build/patches/**'
       - '.github/workflows/build-arlighttetris.yml'
   pull_request:
     branches:
       - main
     paths:
-      - 'arlighttetris-build/**'
+      - 'tetris032-project/**'
+      - 'arlighttetris-build/patches/**'
       - '.github/workflows/build-arlighttetris.yml'
 
 permissions:
@@ -25,7 +26,7 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      - name: Checkout build branch
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Java 21
@@ -34,62 +35,24 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Restore and verify ArlightTetris source
+      - name: Set up Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Prepare verified source
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import base64
-          import re
-          import zipfile
-          from pathlib import Path
-
-          paths = [Path('arlighttetris-build/source.part00'),
-                   Path('arlighttetris-build/source.part01')]
-          clean = [re.sub(rb'[^A-Za-z0-9+/=]', b'', p.read_bytes()) for p in paths]
-
-          def padded(value: bytes) -> bytes:
-              value = value.replace(b'=', b'')
-              return value + b'=' * ((-len(value)) % 4)
-
-          candidates = []
-          # Formato 1: fragmentos de una única cadena Base64.
-          candidates.append(('continuous', base64.b64decode(padded(b''.join(clean)), validate=False)))
-          # Formato 2: cada fragmento codifica una porción binaria independiente.
-          try:
-              candidates.append(('independent', b''.join(
-                  base64.b64decode(padded(part), validate=False) for part in clean)))
-          except Exception:
-              pass
-
-          output = Path('/tmp/arlighttetris.zip')
-          for mode, data in candidates:
-              output.write_bytes(data)
-              try:
-                  with zipfile.ZipFile(output) as archive:
-                      if archive.testzip() is None and 'arlighttetris/build.gradle' in archive.namelist():
-                          print(f'Reconstrucción válida: {mode}, bytes={len(data)}')
-                          break
-              except Exception as exc:
-                  print(f'Candidato {mode} inválido: {exc}')
-          else:
-              raise SystemExit('Ningún método reconstruyó un ZIP válido')
-          PY
-
-          mkdir -p work
-          unzip -q /tmp/arlighttetris.zip -d work
+          mkdir -p work/arlighttetris
+          cp -a tetris032-project/. work/arlighttetris/
           cp -a arlighttetris-build/patches/. work/arlighttetris/
           test -f work/arlighttetris/build.gradle
           test -f work/arlighttetris/settings.gradle
           grep -q "version = '0.3.2'" work/arlighttetris/build.gradle
           grep -q 'startSoloTest' work/arlighttetris/src/main/java/com/arlight/tetris/multiplayer/LobbyManager.java
           grep -q 'ArlightTetris registrado y verificado' work/arlighttetris/src/main/java/com/arlight/tetris/integration/ArlightCoreIntegration.java
-          sha256sum /tmp/arlighttetris.zip
-
-      - name: Set up Gradle 8.10.2
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
+          find work/arlighttetris/src -type f | sort
 
       - name: Build ArlightTetris
         working-directory: work/arlighttetris
@@ -107,6 +70,7 @@ jobs:
           test -n "$JAR"
           jar tf "$JAR" | grep -q 'com/arlight/tetris/integration/ArlightCoreIntegration.class'
           jar tf "$JAR" | grep -q 'com/arlight/tetris/TetrisCommands.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/game/GameSession.class'
           unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="0.3.2"'
           cp "$JAR" work/ArlightTetris-0.3.2.jar
           sha256sum work/ArlightTetris-0.3.2.jar
