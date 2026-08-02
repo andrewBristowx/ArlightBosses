@@ -43,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p work
-          tr -d '[:space:]' < weaponskins-ci/source.b64 | base64 --decode > /tmp/weaponskins.zip
+          cat weaponskins-ci/chunks/part* | tr -d '[:space:]' | base64 --decode > /tmp/weaponskins.zip
           echo '8abb468e61bf40d1bb45c361955e19fc4798222b7b17f5a3a5f8eaac268c7c71  /tmp/weaponskins.zip' | sha256sum --check -
           unzip -q /tmp/weaponskins.zip -d work
 
