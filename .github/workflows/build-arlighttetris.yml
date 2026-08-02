@@ -71,7 +71,7 @@ jobs:
           jar tf "$JAR" | grep -q 'com/arlight/tetris/integration/ArlightCoreIntegration.class'
           jar tf "$JAR" | grep -q 'com/arlight/tetris/TetrisCommands.class'
           jar tf "$JAR" | grep -q 'com/arlight/tetris/game/GameSession.class'
-          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="0.3.2"'
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -Eq 'version[[:space:]]*=[[:space:]]*"0\.3\.2"'
           cp "$JAR" work/ArlightTetris-0.3.2.jar
           sha256sum work/ArlightTetris-0.3.2.jar
 
