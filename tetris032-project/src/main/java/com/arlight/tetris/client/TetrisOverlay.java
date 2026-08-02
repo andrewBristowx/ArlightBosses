@@ -89,7 +89,7 @@ public final class TetrisOverlay implements LayeredDraw.Layer {
     private void drawHold(GuiGraphics graphics, ClientboundBoardStatePacket board) {
         int boxX = BOARD_LEFT - 70;
         int boxY = BOARD_TOP;
-        graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, "HOLD", boxX, boxY - 10, 0xFFFFFF);
+        graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, "GUARDADO", boxX, boxY - 10, 0xFFFFFF);
         graphics.renderOutline(boxX, boxY, 56, 40, 0xFFAAAAAA);
         if (board.holdType() >= 0) {
             drawMiniPiece(graphics, TetrominoType.values()[board.holdType()], boxX + 8, boxY + 8, COLORS[board.holdType()]);
@@ -99,7 +99,7 @@ public final class TetrisOverlay implements LayeredDraw.Layer {
     private void drawNextQueue(GuiGraphics graphics, ClientboundBoardStatePacket board) {
         int boxX = BOARD_LEFT + Board.WIDTH * CELL + 14;
         int boxY = BOARD_TOP;
-        graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, "NEXT", boxX, boxY - 10, 0xFFFFFF);
+        graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, "SIGUIENTES", boxX, boxY - 10, 0xFFFFFF);
         byte[] next = board.nextQueue();
         for (int i = 0; i < next.length; i++) {
             int type = next[i];
@@ -121,9 +121,17 @@ public final class TetrisOverlay implements LayeredDraw.Layer {
         int textX = BOARD_LEFT;
         int textY = BOARD_TOP + Board.VISIBLE_HEIGHT * CELL + 8;
         var font = net.minecraft.client.Minecraft.getInstance().font;
-        graphics.drawString(font, "Líneas: " + board.linesCleared(), textX, textY, 0xFFFFFF);
-        if (board.combo() > 0) graphics.drawString(font, "Combo x" + board.combo(), textX, textY + 10, 0xFFD060);
-        if (board.backToBack()) graphics.drawString(font, "Back-to-Back", textX, textY + 20, 0x60D0FF);
+
+        graphics.drawString(font, "Puntos: " + board.score(), textX, textY, 0xFFFFFFFF);
+        graphics.drawString(font, "Líneas: " + board.linesCleared(), textX, textY + 10, 0xFFFFFFFF);
+        graphics.drawString(font, "Nivel: " + board.level(), textX, textY + 20, 0xFFFFD060);
+
+        if (board.combo() > 0) {
+            graphics.drawString(font, "Combo x" + board.combo(), textX + 90, textY, 0xFFFFD060);
+        }
+        if (board.backToBack()) {
+            graphics.drawString(font, "Back-to-Back", textX + 90, textY + 10, 0xFF60D0FF);
+        }
     }
 
     private void drawControls(GuiGraphics graphics, int screenWidth) {
@@ -131,10 +139,10 @@ public final class TetrisOverlay implements LayeredDraw.Layer {
         int screenHeight = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
         var font = net.minecraft.client.Minecraft.getInstance().font;
         graphics.drawCenteredString(font,
-                Component.literal("A/D o ←/→ mover · S o ↓ bajar · W o ↑ rotar · Espacio caída"),
+                Component.literal("A/D o ←/→ mover · S o ↓ bajar · W o ↑ rotar · Espacio caída total"),
                 screenWidth / 2, screenHeight - 34, 0xFFFFFFFF);
         graphics.drawCenteredString(font,
-                Component.literal("Z giro izquierdo · C guardar · Esc disponible"),
+                Component.literal("Z giro izquierdo · C guardar bloque · Esc disponible"),
                 screenWidth / 2, screenHeight - 22, 0xFFD8A8FF);
     }
 
