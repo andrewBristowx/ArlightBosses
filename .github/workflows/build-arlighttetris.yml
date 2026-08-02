@@ -9,6 +9,12 @@ on:
       - 'arlighttetris-build/chunks/**'
       - 'arlighttetris-build/patches/**'
       - '.github/workflows/build-arlighttetris.yml'
+  pull_request:
+    branches:
+      - agent/compile-arlighttetris-v0.3.0
+    paths:
+      - 'arlighttetris-build/**'
+      - '.github/workflows/build-arlighttetris.yml'
 
 permissions:
   contents: write
@@ -83,7 +89,7 @@ jobs:
           retention-days: 7
 
       - name: Record build status and logs
-        if: always()
+        if: always() && github.event_name == 'push'
         shell: bash
         env:
           BUILD_STATUS: ${{ job.status }}
