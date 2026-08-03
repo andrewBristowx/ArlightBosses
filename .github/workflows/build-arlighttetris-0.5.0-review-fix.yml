@@ -23,16 +23,24 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Descargar fuente exacta
+      - name: Descargar fuente original
         shell: bash
         run: |
           set -euo pipefail
           python3 -m pip install --quiet gdown
-          gdown 1ZpPWHM-Zen30cu-eAP_rm1Wq-Ly39ZXV -O source.zip
-          echo 'c5d7f6f2d06eaef488b249085d29b2b72cb84ef760e244cf372aa8be58f20408  source.zip' | sha256sum -c -
+          gdown 1ZpPWHM-Zen30cu-eAP_rm1Wq-Ly39ZXV -O source-original.zip
+          echo 'c5d7f6f2d06eaef488b249085d29b2b72cb84ef760e244cf372aa8be58f20408  source-original.zip' | sha256sum -c -
           mkdir source
-          unzip -q source.zip -d source
+          unzip -q source-original.zip -d source
           chmod +x source/gradlew
+
+      - name: Corregir wrapper incompatible
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's/gradle-8\.14-bin\.zip/gradle-8.13-bin.zip/' source/gradle/wrapper/gradle-wrapper.properties
+          sed -i 's/^# ArlightTetris 0\.4\.0 /# ArlightTetris 0.5.0 /' source/README.md
+          grep -q 'gradle-8.13-bin.zip' source/gradle/wrapper/gradle-wrapper.properties
 
       - name: Verificar configuración
         shell: bash
@@ -42,13 +50,12 @@ jobs:
           grep -q "net.neoforged.gradle.userdev' version '7.0.165'" source/build.gradle
           grep -q 'implementation "net.neoforged:neoforge:21.1.83"' source/build.gradle
           grep -q 'JavaLanguageVersion.of(21)' source/build.gradle
-          grep -q 'gradle-8.14-bin.zip' source/gradle/wrapper/gradle-wrapper.properties
 
       - name: Compilar con Gradle
         working-directory: source
         run: ./gradlew clean build --stacktrace --no-daemon
 
-      - name: Verificar JAR
+      - name: Verificar y empaquetar
         shell: bash
         run: |
           set -euo pipefail
@@ -57,11 +64,14 @@ jobs:
           unzip -t "$JAR"
           unzip -l "$JAR" | grep -q 'com/arlight/tetris/ArlightTetrisMod.class'
           unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="0.5.0"'
+          rm -rf source/build source/.gradle source/run
+          (cd source && zip -qr ../ArlightTetris-0.5.0-FIXED-SOURCE.zip .)
           mkdir -p delivery
           cp "$JAR" delivery/ArlightTetris-0.5.0.jar
-          cp source.zip delivery/ArlightTetris-0.5.0-SOURCE.zip
+          cp ArlightTetris-0.5.0-FIXED-SOURCE.zip delivery/
+          cp source-original.zip delivery/ArlightTetris-0.5.0-ORIGINAL-SOURCE.zip
           cd delivery
-          sha256sum ArlightTetris-0.5.0.jar ArlightTetris-0.5.0-SOURCE.zip > ArlightTetris-0.5.0-SHA256.txt
+          sha256sum ArlightTetris-0.5.0.jar ArlightTetris-0.5.0-FIXED-SOURCE.zip ArlightTetris-0.5.0-ORIGINAL-SOURCE.zip > ArlightTetris-0.5.0-SHA256.txt
           sha256sum -c ArlightTetris-0.5.0-SHA256.txt
 
       - name: Subir entrega
