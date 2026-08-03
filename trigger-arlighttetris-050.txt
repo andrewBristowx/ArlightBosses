@@ -1,1 +1,2 @@
 Compilación limpia solicitada el 2026-08-02.
+Segundo disparo del workflow.
