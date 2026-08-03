@@ -15,7 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     steps:
       - name: Configurar Java 21
         uses: actions/setup-java@v4
@@ -34,20 +34,21 @@ jobs:
           unzip -q source-original.zip -d source
           chmod +x source/gradlew
 
-      - name: Corregir wrapper incompatible
+      - name: Corregir entorno NeoGradle
         shell: bash
         run: |
           set -euo pipefail
-          sed -i 's/gradle-8\.14-bin\.zip/gradle-8.13-bin.zip/' source/gradle/wrapper/gradle-wrapper.properties
+          sed -i "s/net.neoforged.gradle.userdev' version '7\.0\.165'/net.neoforged.gradle.userdev' version '7.1.36'/" source/build.gradle
+          sed -i 's/gradle-8\.14-bin\.zip/gradle-9.2.1-bin.zip/' source/gradle/wrapper/gradle-wrapper.properties
           sed -i 's/^# ArlightTetris 0\.4\.0 /# ArlightTetris 0.5.0 /' source/README.md
-          grep -q 'gradle-8.13-bin.zip' source/gradle/wrapper/gradle-wrapper.properties
+          grep -q "net.neoforged.gradle.userdev' version '7.1.36'" source/build.gradle
+          grep -q 'gradle-9.2.1-bin.zip' source/gradle/wrapper/gradle-wrapper.properties
 
       - name: Verificar configuración
         shell: bash
         run: |
           set -euo pipefail
           grep -q "version = '0.5.0'" source/build.gradle
-          grep -q "net.neoforged.gradle.userdev' version '7.0.165'" source/build.gradle
           grep -q 'implementation "net.neoforged:neoforge:21.1.83"' source/build.gradle
           grep -q 'JavaLanguageVersion.of(21)' source/build.gradle
 
