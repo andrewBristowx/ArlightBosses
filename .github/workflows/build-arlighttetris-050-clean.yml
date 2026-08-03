@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --quiet gdown
-          gdown --id 1wsHFeVmmR6q9p8Au2GlOiOfdUXGs9Csr -O ArlightTetris-0.5.0-SOURCE.zip
+          gdown 1wsHFeVmmR6q9p8Au2GlOiOfdUXGs9Csr -O ArlightTetris-0.5.0-SOURCE.zip
           test -s ArlightTetris-0.5.0-SOURCE.zip
           echo 'c5d7f6f2d06eaef488b249085d29b2b72cb84ef760e244cf372aa8be58f20408  ArlightTetris-0.5.0-SOURCE.zip' | sha256sum -c -
           mkdir project
