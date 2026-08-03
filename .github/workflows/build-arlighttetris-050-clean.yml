@@ -37,7 +37,16 @@ jobs:
         run: |
           set -euo pipefail
           mkdir project
-          cat arlighttetris050clean/source.b64.* | base64 -d > /tmp/arlighttetris-text.tar.gz
+          cat \
+            arlighttetris050clean/source.b64.00 \
+            arlighttetris050clean/source.b64.01 \
+            arlighttetris050clean/source.b64.02 \
+            arlighttetris050clean/source.b64.03 \
+            arlighttetris050clean/source.b64.04a \
+            arlighttetris050clean/source.b64.04b \
+            arlighttetris050clean/source.b64.05 \
+            arlighttetris050clean/source.b64.06 \
+            | base64 -d > /tmp/arlighttetris-text.tar.gz
           echo '168a880fded16f94c7e30f14d6554420d58f1a7c6dabc95465b4133efffbd812  /tmp/arlighttetris-text.tar.gz' | sha256sum -c -
           tar -xzf /tmp/arlighttetris-text.tar.gz -C project
           mkdir -p project/src/main/resources/assets/arlighttetris/textures/gui
