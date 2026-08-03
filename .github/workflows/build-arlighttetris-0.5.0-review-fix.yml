@@ -63,12 +63,14 @@ jobs:
           JAR="$(find source/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' | head -n 1)"
           test -n "$JAR"
           unzip -t "$JAR"
-          unzip -l "$JAR" | grep -q 'com/arlight/tetris/ArlightTetrisMod.class'
-          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="0.5.0"'
-          rm -rf source/build source/.gradle source/run
-          (cd source && zip -qr ../ArlightTetris-0.5.0-FIXED-SOURCE.zip .)
+          jar tf "$JAR" > jar-contents.txt
+          grep -Fxq 'com/arlight/tetris/ArlightTetrisMod.class' jar-contents.txt
+          unzip -p "$JAR" META-INF/neoforge.mods.toml > compiled-neoforge.mods.toml
+          grep -Eq 'version[[:space:]]*=[[:space:]]*"0\.5\.0"' compiled-neoforge.mods.toml
           mkdir -p delivery
           cp "$JAR" delivery/ArlightTetris-0.5.0.jar
+          rm -rf source/build source/.gradle source/run
+          (cd source && zip -qr ../ArlightTetris-0.5.0-FIXED-SOURCE.zip .)
           cp ArlightTetris-0.5.0-FIXED-SOURCE.zip delivery/
           cp source-original.zip delivery/ArlightTetris-0.5.0-ORIGINAL-SOURCE.zip
           cd delivery
