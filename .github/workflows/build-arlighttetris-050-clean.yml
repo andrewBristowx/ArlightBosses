@@ -6,6 +6,7 @@ on:
     branches:
       - main
     paths:
+      - 'arlighttetris050clean/**'
       - '.github/workflows/build-arlighttetris-050-clean.yml'
 
 permissions:
@@ -31,16 +32,18 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
-      - name: Download clean source ZIP
+      - name: Reconstruct clean source
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --quiet gdown
-          gdown 1wsHFeVmmR6q9p8Au2GlOiOfdUXGs9Csr -O ArlightTetris-0.5.0-SOURCE.zip
-          test -s ArlightTetris-0.5.0-SOURCE.zip
-          echo 'c5d7f6f2d06eaef488b249085d29b2b72cb84ef760e244cf372aa8be58f20408  ArlightTetris-0.5.0-SOURCE.zip' | sha256sum -c -
           mkdir project
-          unzip -q ArlightTetris-0.5.0-SOURCE.zip -d project
+          cat arlighttetris050clean/source.b64.* | base64 -d > /tmp/arlighttetris-text.tar.gz
+          echo '168a880fded16f94c7e30f14d6554420d58f1a7c6dabc95465b4133efffbd812  /tmp/arlighttetris-text.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/arlighttetris-text.tar.gz -C project
+          mkdir -p project/src/main/resources/assets/arlighttetris/textures/gui
+          base64 -d > project/src/main/resources/assets/arlighttetris/textures/gui/tetris_waiting_background.png <<'PNG'
+          iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=
+          PNG
           test -f project/build.gradle
           grep -q "version = '0.5.0'" project/build.gradle
 
