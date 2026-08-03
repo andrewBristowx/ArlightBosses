@@ -1,0 +1,116 @@
+name: Build ArlightTetris 0.5.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/compile-arlighttetris-0.5.0-build
+    paths:
+      - 'arlighttetris050/**'
+      - '.github/workflows/build-arlighttetris-050.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'arlighttetris050/**'
+      - '.github/workflows/build-arlighttetris-050.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Reconstruct and verify source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/arlighttetris050-parts work/arlighttetris
+
+          for file in arlighttetris050/tiny*.b64; do
+            name="$(basename "$file" .b64)"
+            echo "Decodificando $name"
+            base64 -d -i "$file" > "/tmp/arlighttetris050-parts/$name"
+          done
+
+          cat /tmp/arlighttetris050-parts/tiny* > /tmp/ArlightTetris-0.5.0-COMPILE.tar.gz
+          echo 'a44db4e7896f3ae05590d60459b900e1d18e64ed2584512442e70fde5fbd4841  /tmp/ArlightTetris-0.5.0-COMPILE.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/ArlightTetris-0.5.0-COMPILE.tar.gz -C work/arlighttetris
+
+          if [ -d arlighttetris050/patches ]; then
+            cp -a arlighttetris050/patches/. work/arlighttetris/
+          fi
+
+          mkdir -p work/arlighttetris/src/main/resources/assets/arlighttetris/textures/gui
+          base64 -d -i > work/arlighttetris/src/main/resources/assets/arlighttetris/textures/gui/tetris_waiting_background.png <<'PNG'
+          iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=
+          PNG
+
+          test -f work/arlighttetris/build.gradle
+          test -f work/arlighttetris/settings.gradle
+          grep -q "version = '0.5.0'" work/arlighttetris/build.gradle
+          grep -q 'findEnteredPod' work/arlighttetris/src/main/java/com/arlight/tetris/world/TetrisArena.java
+          grep -q 'enforceAssignedSlots' work/arlighttetris/src/main/java/com/arlight/tetris/world/ArenaMatchListener.java
+          grep -q 'ArenaDisplayManager' work/arlighttetris/src/main/java/com/arlight/tetris/world/ArenaDisplayManager.java
+          grep -q 'TetrisStatsStore' work/arlighttetris/src/main/java/com/arlight/tetris/stats/TetrisStatsStore.java
+          grep -q 'drawArenaSidebar' work/arlighttetris/src/main/java/com/arlight/tetris/client/TetrisOverlay.java
+          grep -q 'getGravityIntervalTicks' work/arlighttetris/src/main/java/com/arlight/tetris/game/GameSession.java
+
+      - name: Build ArlightTetris
+        working-directory: work/arlighttetris
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon clean build --stacktrace 2>&1 | tee /tmp/arlighttetris-050-build.log
+
+      - name: Verify final JAR
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find work/arlighttetris/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -n 1)"
+          test -n "$JAR"
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/world/TetrisArenaBuilder.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/world/ArenaMatchListener.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/world/ArenaDisplayManager.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/stats/TetrisStatsStore.class'
+          jar tf "$JAR" | grep -q 'com/arlight/tetris/network/ClientboundArenaSidebarPacket.class'
+          jar tf "$JAR" | grep -q 'assets/arlighttetris/textures/gui/tetris_waiting_background.png'
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -Eq 'version[[:space:]]*=[[:space:]]*"0\.5\.0"'
+          cp "$JAR" work/ArlightTetris-0.5.0.jar
+          sha256sum work/ArlightTetris-0.5.0.jar
+
+      - name: Upload ArlightTetris JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightTetris-0.5.0
+          path: work/ArlightTetris-0.5.0.jar
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightTetris-0.5.0-diagnostics
+          path: /tmp/arlighttetris-050-build.log
+          if-no-files-found: warn
+          retention-days: 7
