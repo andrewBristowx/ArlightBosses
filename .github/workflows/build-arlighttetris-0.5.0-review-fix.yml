@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/compile-arlighttetris-0.5.0-review-fix
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
