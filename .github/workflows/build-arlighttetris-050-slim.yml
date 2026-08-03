@@ -44,12 +44,19 @@ jobs:
 
           echo 'd1f9cb7e721371a7954311b56aa702721e4e2de64156caa3c8b674f29a931264  arlighttetris050/slim00.b64' | sha256sum -c -
           echo '184f99546d936b27e930ab402a37b0a7394a7737a672f21ade21c7789ff517a0  arlighttetris050/slim01.b64' | sha256sum -c -
-          echo '4fa60f882ccacd6df46037684a655cc5e48bf7d2707ecd678025c829ee37c98e  arlighttetris050/slim02.b64' | sha256sum -c -
+          echo 'd9b048f054a7678d6d77a4f443b05c131be94bc7ab9f1778b17cfcf6f3b3fd65  arlighttetris050/slim02_00.b64' | sha256sum -c -
+          echo '8538e6bd73bb861535f13e75db8ebf4b4d1abeac960b90cd5883581b43a56870  arlighttetris050/slim02_01.b64' | sha256sum -c -
+          echo '75ef6b3582f3c3796be0bf04e658188c6c3bdcf04493dff79079624c0d1508fb  arlighttetris050/slim02_02.b64' | sha256sum -c -
+          echo 'f5c8feb20d05cf2be4f00564ccb78d04846747b229aac37ab145ca960939be21  arlighttetris050/slim02_03.b64' | sha256sum -c -
           echo '1347fed4b960c4531cc4be7d4780ab3c5cdedaeb5909cf1fd16cee6bf6b1c3b2  arlighttetris050/slim03.b64' | sha256sum -c -
 
-          for n in 00 01 02 03; do
-            tr -d '\r\n\t ' < "arlighttetris050/slim${n}.b64" | base64 --decode > "/tmp/arlight-parts/${n}.bin"
-          done
+          cat arlighttetris050/slim02_*.b64 > /tmp/slim02.b64
+          echo '4fa60f882ccacd6df46037684a655cc5e48bf7d2707ecd678025c829ee37c98e  /tmp/slim02.b64' | sha256sum -c -
+
+          tr -d '\r\n\t ' < arlighttetris050/slim00.b64 | base64 --decode > /tmp/arlight-parts/00.bin
+          tr -d '\r\n\t ' < arlighttetris050/slim01.b64 | base64 --decode > /tmp/arlight-parts/01.bin
+          tr -d '\r\n\t ' < /tmp/slim02.b64 | base64 --decode > /tmp/arlight-parts/02.bin
+          tr -d '\r\n\t ' < arlighttetris050/slim03.b64 | base64 --decode > /tmp/arlight-parts/03.bin
           cat /tmp/arlight-parts/*.bin > /tmp/ArlightTetris-0.5.0-SLIM.tar.gz
 
           echo '4b0142065d485d61811c06b3df40415234d955a9e132676cb933f0eb8890eead  /tmp/ArlightTetris-0.5.0-SLIM.tar.gz' | sha256sum -c -
