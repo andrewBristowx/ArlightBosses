@@ -1,0 +1,69 @@
+name: Build ArlightTetris 0.5.0 Review Fix
+
+on:
+  push:
+    branches:
+      - agent/compile-arlighttetris-0.5.0-review-fix
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Descargar fuente exacta
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet gdown
+          gdown 1ZpPWHM-Zen30cu-eAP_rm1Wq-Ly39ZXV -O source.zip
+          echo 'c5d7f6f2d06eaef488b249085d29b2b72cb84ef760e244cf372aa8be58f20408  source.zip' | sha256sum -c -
+          mkdir source
+          unzip -q source.zip -d source
+          chmod +x source/gradlew
+
+      - name: Verificar configuración
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "version = '0.5.0'" source/build.gradle
+          grep -q "net.neoforged.gradle.userdev' version '7.0.165'" source/build.gradle
+          grep -q 'implementation "net.neoforged:neoforge:21.1.83"' source/build.gradle
+          grep -q 'JavaLanguageVersion.of(21)' source/build.gradle
+          grep -q 'gradle-8.14-bin.zip' source/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Compilar con Gradle
+        working-directory: source
+        run: ./gradlew clean build --stacktrace --no-daemon
+
+      - name: Verificar JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find source/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' | head -n 1)"
+          test -n "$JAR"
+          unzip -t "$JAR"
+          unzip -l "$JAR" | grep -q 'com/arlight/tetris/ArlightTetrisMod.class'
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="0.5.0"'
+          mkdir -p delivery
+          cp "$JAR" delivery/ArlightTetris-0.5.0.jar
+          cp source.zip delivery/ArlightTetris-0.5.0-SOURCE.zip
+          cd delivery
+          sha256sum ArlightTetris-0.5.0.jar ArlightTetris-0.5.0-SOURCE.zip > ArlightTetris-0.5.0-SHA256.txt
+          sha256sum -c ArlightTetris-0.5.0-SHA256.txt
+
+      - name: Subir entrega
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightTetris-0.5.0-REVIEW-FIX-DELIVERY
+          path: delivery/*
+          retention-days: 90
