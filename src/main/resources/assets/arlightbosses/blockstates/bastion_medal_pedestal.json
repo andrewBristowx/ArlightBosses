@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "arlightbosses:block/bastion_medal_pedestal"
+      }
+    }
+  ]
+}

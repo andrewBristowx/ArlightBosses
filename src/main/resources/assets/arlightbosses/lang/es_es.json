@@ -66,5 +66,17 @@
   "item.arlightbosses.nether_guardian_spawn_egg": "Huevo generador del Guardián del Nether",
   "item.arlightbosses.void_guardian_spawn_egg": "Huevo generador del Guardián del Vacío",
   "item.arlightbosses.dragon_guardian_spawn_egg": "Huevo generador del Guardián Dragón",
-  "container.arlightbosses.treasure_chest": "Cofre del tesoro"
+  "container.arlightbosses.treasure_chest": "Cofre del tesoro",
+  "item.arlightbosses.mossbound_home_medal": "Medalla del Hogar Musgoso",
+  "item.arlightbosses.mossbound_home_medal.lore": "Reconoce a quien protegió los hogares del bosque contaminado.",
+  "item.arlightbosses.gilded_trade_medal": "Medalla del Comercio Dorado",
+  "item.arlightbosses.gilded_trade_medal.lore": "Prueba que las rutas y los distritos comerciales fueron liberados.",
+  "item.arlightbosses.emerald_bastion_medal": "Medalla del Bastión Esmeralda",
+  "item.arlightbosses.emerald_bastion_medal.lore": "Sello obtenido al quebrar la defensa del bastión corrompido.",
+  "block.arlightbosses.home_medal_pedestal": "Pedestal del Hogar Musgoso",
+  "item.arlightbosses.home_medal_pedestal": "Pedestal del Hogar Musgoso",
+  "block.arlightbosses.trade_medal_pedestal": "Pedestal del Comercio Dorado",
+  "item.arlightbosses.trade_medal_pedestal": "Pedestal del Comercio Dorado",
+  "block.arlightbosses.bastion_medal_pedestal": "Pedestal del Bastión Esmeralda",
+  "item.arlightbosses.bastion_medal_pedestal": "Pedestal del Bastión Esmeralda"
 }
