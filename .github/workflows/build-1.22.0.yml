@@ -1,0 +1,118 @@
+name: Compilar ArlightBosses 1.22.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/1.22.0-overworld-medals-pedestals
+    paths:
+      - '.github/workflows/build-1.22.0.yml'
+      - 'scripts/apply_1_22_0.py'
+      - 'src/**'
+      - 'build.gradle'
+      - 'gradle.properties'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-1.22.0.yml'
+      - 'scripts/apply_1_22_0.py'
+      - 'src/**'
+      - 'build.gradle'
+      - 'gradle.properties'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Descargar rama candidata
+        uses: actions/checkout@v4
+        with:
+          ref: feature/1.22.0-overworld-medals-pedestals
+          fetch-depth: 0
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Aplicar y validar fuente 1.22.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/apply_1_22_0.py
+          grep -q "version = '1.22.0'" build.gradle
+          grep -q 'MOSSBOUND_HOME_MEDAL' src/main/java/com/arlight/bosses/item/BossItems.java
+          grep -q 'MEDAL_PEDESTAL' src/main/java/com/arlight/bosses/block/entity/BossBlockEntities.java
+          test -f src/main/resources/assets/arlightbosses/geo/medal_pedestal.geo.json
+          test -f src/main/resources/assets/arlightbosses/animations/medal_pedestal.animation.json
+          git diff --check
+
+      - name: Guardar fuente generada en la rama
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build.gradle SOURCE_VERSION.txt CAMBIOS_1.22.0.txt src/main/java src/main/resources
+          if ! git diff --cached --quiet; then
+            git commit -m 'ArlightBosses 1.22.0: medallas y pedestales GeckoLib'
+            git push origin HEAD:feature/1.22.0-overworld-medals-pedestals
+          fi
+
+      - name: Compilar con Gradle
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --no-daemon clean build
+
+      - name: Verificar JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.0*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          test -n "$JAR"
+          jar tf "$JAR" | grep -q 'com/arlight/bosses/block/MedalPedestalBlock.class'
+          jar tf "$JAR" | grep -q 'com/arlight/bosses/block/entity/MedalPedestalBlockEntity.class'
+          jar tf "$JAR" | grep -q 'assets/arlightbosses/geo/medal_pedestal.geo.json'
+          jar tf "$JAR" | grep -q 'assets/arlightbosses/animations/medal_pedestal.animation.json'
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="1.22.0"'
+
+      - name: Reunir entregables
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/source
+          find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.0*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -exec cp {} dist/ArlightBosses-1.22.0.jar \;
+          rsync -a --exclude '.git/' --exclude '.gradle/' --exclude 'build/' --exclude 'dist/' ./ dist/source/
+          (cd dist/source && zip -qr ../ArlightBosses-1.22.0-SOURCE.zip .)
+          sha256sum dist/ArlightBosses-1.22.0.jar dist/ArlightBosses-1.22.0-SOURCE.zip > dist/ArlightBosses-1.22.0-SHA256.txt
+
+      - name: Subir JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.0-JAR
+          path: dist/ArlightBosses-1.22.0.jar
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Subir fuente y hashes
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.0-SOURCE
+          path: |
+            dist/ArlightBosses-1.22.0-SOURCE.zip
+            dist/ArlightBosses-1.22.0-SHA256.txt
+          if-no-files-found: error
+          retention-days: 30

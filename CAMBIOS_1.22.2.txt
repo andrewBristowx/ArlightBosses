@@ -1,0 +1,8 @@
+ArlightBosses 1.22.2
+
+- Rediseña las tres medallas como medallas 3D GeckoLib con aro, relieve, insignia y cinta.
+- Añade texturas propias 64x64 para medallas y pedestales.
+- La medalla forma parte del modelo GeckoLib del pedestal y ya no depende de renderizar un GeoItem dentro de otro renderer.
+- Añade métodos externos sincronizados para insertar, llenar, desbloquear, dejar desbloqueado y reiniciar pedestales.
+- Fuerza actualización de BlockState y paquete de bloque para que los clientes vean la animación.
+- Conserva todos los IDs y mundos existentes.

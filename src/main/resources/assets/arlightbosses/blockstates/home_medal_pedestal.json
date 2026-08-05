@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "arlightbosses:block/home_medal_pedestal"
+      }
+    }
+  ]
+}
