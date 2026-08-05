@@ -7,7 +7,6 @@ on:
       - feature/1.22.2-real-medals-joint-sync
     paths:
       - '.github/workflows/build-1.22.2.yml'
-      - '.github/import/1222b.patch.gz.b64.part*'
       - 'src/**'
       - 'scripts/generate_1_22_2_textures.py'
       - 'build.gradle'
@@ -40,25 +39,10 @@ jobs:
         with:
           gradle-version: '9.6.0'
 
-      - name: Aplicar corrección y generar texturas
+      - name: Validar fuente y generar texturas
         shell: bash
         run: |
           set -euo pipefail
-          if ! grep -q "version = '1.22.2'" build.gradle; then
-            python3 - <<'PY'
-            from pathlib import Path
-            import base64, glob, gzip
-            alphabet = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
-            encoded = ''.join(Path(path).read_text(encoding='utf-8')
-                              for path in sorted(glob.glob('.github/import/1222b.patch.gz.b64.part*')))
-            encoded = ''.join(ch for ch in encoded if ch in alphabet)
-            if len(encoded) % 4:
-                encoded += '=' * (4 - len(encoded) % 4)
-            packed = base64.b64decode(encoded, validate=False)
-            Path('/tmp/1222.patch').write_bytes(gzip.decompress(packed))
-            PY
-            git apply --binary /tmp/1222.patch
-          fi
           python3 scripts/generate_1_22_2_textures.py
           grep -q "version = '1.22.2'" build.gradle
           grep -q 'playExternalUnlock' src/main/java/com/arlight/bosses/block/entity/MedalPedestalBlockEntity.java
@@ -70,17 +54,17 @@ jobs:
           test -s src/main/resources/assets/arlightbosses/textures/block/home_medal_pedestal.png
           git diff --check
 
-      - name: Guardar fuente 1.22.2 en la rama
+      - name: Guardar texturas generadas en la rama
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add build.gradle BUILD_VERSION.txt SOURCE_VERSION.txt CAMBIOS_1.22.2.txt PROBAR_1.22.2.txt \
-            scripts/generate_1_22_2_textures.py src/main/java src/main/resources
+          git add src/main/resources/assets/arlightbosses/textures/item/*_medal.png \
+            src/main/resources/assets/arlightbosses/textures/block/*_medal_pedestal.png
           if ! git diff --cached --quiet; then
-            git commit -m 'ArlightBosses 1.22.2: medallas reales y sincronización de pedestales'
+            git commit -m 'ArlightBosses 1.22.2: generar texturas definitivas de medallas'
             git push origin HEAD:feature/1.22.2-real-medals-joint-sync
           fi
 
