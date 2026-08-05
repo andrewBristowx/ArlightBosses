@@ -2,6 +2,7 @@ package com.arlight.bosses.block.entity;
 
 import com.arlight.bosses.block.MedalPedestalBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
@@ -11,7 +12,7 @@ import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-/** Animaciones persistentes de los tres pedestales de medallas del Overworld. */
+/** Animaciones persistentes y sincronizadas de los pedestales del Overworld. */
 public final class MedalPedestalBlockEntity extends BlockEntity implements GeoBlockEntity {
     private static final RawAnimation EMPTY = RawAnimation.begin().thenLoop("animation.medal_pedestal.empty");
     private static final RawAnimation INSERTING = RawAnimation.begin().thenPlay("animation.medal_pedestal.insert");
@@ -25,7 +26,7 @@ public final class MedalPedestalBlockEntity extends BlockEntity implements GeoBl
     }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "medal_pedestal", 3, state -> {
+        controllers.add(new AnimationController<>(this, "medal_pedestal", 1, state -> {
             BlockState current = getBlockState();
             if (!current.hasProperty(MedalPedestalBlock.PEDESTAL_STATE)) {
                 return state.setAndContinue(EMPTY);
@@ -38,6 +39,27 @@ public final class MedalPedestalBlockEntity extends BlockEntity implements GeoBl
                 case UNLOCKED -> state.setAndContinue(UNLOCKED);
             };
         }));
+    }
+
+    public void playExternalInsert() { setVisualState(MedalPedestalBlock.PedestalState.INSERTING); }
+    public void playExternalFilled() { setVisualState(MedalPedestalBlock.PedestalState.FILLED); }
+    public void playExternalUnlock() { setVisualState(MedalPedestalBlock.PedestalState.UNLOCKING); }
+    public void playExternalUnlocked() { setVisualState(MedalPedestalBlock.PedestalState.UNLOCKED); }
+    public void playExternalReset() { setVisualState(MedalPedestalBlock.PedestalState.EMPTY); }
+
+    private void setVisualState(MedalPedestalBlock.PedestalState target) {
+        Level currentLevel = getLevel();
+        BlockState oldState = getBlockState();
+        if (currentLevel == null || !oldState.hasProperty(MedalPedestalBlock.PEDESTAL_STATE)) return;
+        BlockState newState = oldState.setValue(MedalPedestalBlock.PEDESTAL_STATE, target);
+        if (newState == oldState) {
+            currentLevel.sendBlockUpdated(worldPosition, oldState, oldState, 3);
+            setChanged();
+            return;
+        }
+        currentLevel.setBlock(worldPosition, newState, 3);
+        currentLevel.sendBlockUpdated(worldPosition, oldState, newState, 3);
+        setChanged();
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
