@@ -44,7 +44,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .github/import/1222b.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1222.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, glob, gzip
+          alphabet = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
+          encoded = ''.join(Path(path).read_text(encoding='utf-8')
+                            for path in sorted(glob.glob('.github/import/1222b.patch.gz.b64.part*')))
+          encoded = ''.join(ch for ch in encoded if ch in alphabet)
+          if len(encoded) % 4:
+              encoded += '=' * (4 - len(encoded) % 4)
+          packed = base64.b64decode(encoded, validate=False)
+          Path('/tmp/1222.patch').write_bytes(gzip.decompress(packed))
+          print('Fragmentos:', len(glob.glob('.github/import/1222b.patch.gz.b64.part*')),
+                'base64:', len(encoded), 'parche:', Path('/tmp/1222.patch').stat().st_size)
+          PY
           if ! grep -q "version = '1.22.2'" build.gradle; then
             git apply --binary /tmp/1222.patch
           fi
