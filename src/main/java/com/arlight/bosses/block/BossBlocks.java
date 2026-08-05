@@ -29,6 +29,16 @@ public final class BossBlocks {
                                     == NetherDungeonLockBlock.LockState.OPENED ? 5 : 12)
                             .noOcclusion().requiresCorrectToolForDrops().noLootTable()));
 
+    public static final DeferredHolder<Block, MedalPedestalBlock> HOME_MEDAL_PEDESTAL = pedestal(
+            "home_medal_pedestal", MedalPedestalBlock.MedalKind.HOME,
+            MapColor.COLOR_GREEN, SoundType.MOSS);
+    public static final DeferredHolder<Block, MedalPedestalBlock> TRADE_MEDAL_PEDESTAL = pedestal(
+            "trade_medal_pedestal", MedalPedestalBlock.MedalKind.TRADE,
+            MapColor.COLOR_ORANGE, SoundType.COPPER);
+    public static final DeferredHolder<Block, MedalPedestalBlock> BASTION_MEDAL_PEDESTAL = pedestal(
+            "bastion_medal_pedestal", MedalPedestalBlock.MedalKind.BASTION,
+            MapColor.COLOR_GREEN, SoundType.DEEPSLATE);
+
     public static final DeferredHolder<Block, TreasureChestBlock> COPPER_TREASURE_CHEST = chest(
             "copper_treasure_chest", MapColor.COLOR_ORANGE, SoundType.COPPER, 3);
     public static final DeferredHolder<Block, TreasureChestBlock> IRON_TREASURE_CHEST = chest(
@@ -39,6 +49,16 @@ public final class BossBlocks {
             "diamond_treasure_chest", MapColor.COLOR_LIGHT_BLUE, SoundType.AMETHYST, 9);
     public static final DeferredHolder<Block, TreasureChestBlock> NETHERITE_TREASURE_CHEST = chest(
             "netherite_treasure_chest", MapColor.COLOR_BLACK, SoundType.NETHERITE_BLOCK, 11);
+
+    private static DeferredHolder<Block, MedalPedestalBlock> pedestal(
+            String id, MedalPedestalBlock.MedalKind kind, MapColor color, SoundType sound) {
+        return BLOCKS.register(id, () -> new MedalPedestalBlock(kind,
+                BlockBehaviour.Properties.of().mapColor(color).strength(10.0F, 1200.0F)
+                        .sound(sound)
+                        .lightLevel(state -> state.getValue(MedalPedestalBlock.PEDESTAL_STATE)
+                                == MedalPedestalBlock.PedestalState.EMPTY ? 4 : 11)
+                        .noOcclusion().requiresCorrectToolForDrops().noLootTable()));
+    }
 
     private static DeferredHolder<Block, TreasureChestBlock> chest(
             String id, MapColor color, SoundType sound, int light) {
