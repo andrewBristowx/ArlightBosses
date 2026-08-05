@@ -27,8 +27,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * BlockState para que sobreviva reinicios y copias de arena.
  */
 public final class MedalPedestalBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<MedalPedestalBlock> CODEC = simpleCodec(
-            properties -> new MedalPedestalBlock(MedalKind.HOME, properties));
     public static final EnumProperty<PedestalState> PEDESTAL_STATE =
             EnumProperty.create("pedestal_state", PedestalState.class);
     private static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 24.0D, 15.0D);
@@ -45,7 +43,7 @@ public final class MedalPedestalBlock extends HorizontalDirectionalBlock impleme
 
     public MedalKind kind() { return kind; }
 
-    @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec() { return CODEC; }
+    @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec() { return MapCodec.unit(this); }
 
     @Override public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
