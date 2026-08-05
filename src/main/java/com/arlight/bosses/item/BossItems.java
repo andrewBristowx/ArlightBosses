@@ -36,6 +36,21 @@ public final class BossItems {
                     "item.arlightbosses.emeraldized_dragon_key.lore",
                     new Item.Properties().rarity(Rarity.EPIC)));
 
+    public static final DeferredHolder<Item, Item> MOSSBOUND_HOME_MEDAL =
+            ITEMS.register("mossbound_home_medal", () -> new CampaignKeyItem(
+                    "item.arlightbosses.mossbound_home_medal.lore",
+                    new Item.Properties().rarity(Rarity.EPIC)));
+
+    public static final DeferredHolder<Item, Item> GILDED_TRADE_MEDAL =
+            ITEMS.register("gilded_trade_medal", () -> new CampaignKeyItem(
+                    "item.arlightbosses.gilded_trade_medal.lore",
+                    new Item.Properties().rarity(Rarity.EPIC)));
+
+    public static final DeferredHolder<Item, Item> EMERALD_BASTION_MEDAL =
+            ITEMS.register("emerald_bastion_medal", () -> new CampaignKeyItem(
+                    "item.arlightbosses.emerald_bastion_medal.lore",
+                    new Item.Properties().rarity(Rarity.EPIC)));
+
     public static final DeferredHolder<Item, BlockItem> CORRUPTED_PEARL_ALTAR =
             ITEMS.register("corrupted_pearl_altar", () -> new BlockItem(
                     BossBlocks.CORRUPTED_PEARL_ALTAR.get(),
@@ -44,6 +59,19 @@ public final class BossItems {
     public static final DeferredHolder<Item, BlockItem> NETHER_DUNGEON_LOCK =
             ITEMS.register("nether_dungeon_lock", () -> new BlockItem(
                     BossBlocks.NETHER_DUNGEON_LOCK.get(),
+                    new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
+
+    public static final DeferredHolder<Item, BlockItem> HOME_MEDAL_PEDESTAL =
+            ITEMS.register("home_medal_pedestal", () -> new BlockItem(
+                    BossBlocks.HOME_MEDAL_PEDESTAL.get(),
+                    new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
+    public static final DeferredHolder<Item, BlockItem> TRADE_MEDAL_PEDESTAL =
+            ITEMS.register("trade_medal_pedestal", () -> new BlockItem(
+                    BossBlocks.TRADE_MEDAL_PEDESTAL.get(),
+                    new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
+    public static final DeferredHolder<Item, BlockItem> BASTION_MEDAL_PEDESTAL =
+            ITEMS.register("bastion_medal_pedestal", () -> new BlockItem(
+                    BossBlocks.BASTION_MEDAL_PEDESTAL.get(),
                     new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
 
     public static final DeferredHolder<Item, BlockItem> COPPER_TREASURE_CHEST = treasureBlockItem(
@@ -120,10 +148,16 @@ public final class BossItems {
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(IGNEOUS_LEGENDARY_KEY.get());
             event.accept(EMERALDIZED_DRAGON_KEY.get());
+            event.accept(MOSSBOUND_HOME_MEDAL.get());
+            event.accept(GILDED_TRADE_MEDAL.get());
+            event.accept(EMERALD_BASTION_MEDAL.get());
         }
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(CORRUPTED_PEARL_ALTAR.get());
             event.accept(NETHER_DUNGEON_LOCK.get());
+            event.accept(HOME_MEDAL_PEDESTAL.get());
+            event.accept(TRADE_MEDAL_PEDESTAL.get());
+            event.accept(BASTION_MEDAL_PEDESTAL.get());
             event.accept(COPPER_TREASURE_CHEST.get());
             event.accept(IRON_TREASURE_CHEST.get());
             event.accept(PONY_TREASURE_CHEST.get());
