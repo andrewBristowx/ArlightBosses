@@ -1,0 +1,117 @@
+name: Compilar ArlightBosses 1.22.2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/1.22.2-real-medals-joint-sync
+    paths:
+      - '.github/workflows/build-1.22.2.yml'
+      - '.github/import/1222.patch.gz.b64.part*'
+      - 'src/**'
+      - 'scripts/generate_1_22_2_textures.py'
+      - 'build.gradle'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Descargar rama candidata
+        uses: actions/checkout@v4
+        with:
+          ref: feature/1.22.2-real-medals-joint-sync
+          fetch-depth: 0
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Aplicar corrección y generar texturas
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/import/1222.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1222.patch
+          if ! grep -q "version = '1.22.2'" build.gradle; then
+            git apply --binary /tmp/1222.patch
+          fi
+          python3 scripts/generate_1_22_2_textures.py
+          grep -q "version = '1.22.2'" build.gradle
+          grep -q 'playExternalUnlock' src/main/java/com/arlight/bosses/block/entity/MedalPedestalBlockEntity.java
+          grep -q 'textures/block/home_medal_pedestal.png' src/main/java/com/arlight/bosses/client/MedalPedestalModel.java
+          ! grep -q 'renderStatic' src/main/java/com/arlight/bosses/client/MedalPedestalRenderer.java
+          python3 -m json.tool src/main/resources/assets/arlightbosses/geo/campaign_medal.geo.json >/dev/null
+          python3 -m json.tool src/main/resources/assets/arlightbosses/geo/medal_pedestal.geo.json >/dev/null
+          test -s src/main/resources/assets/arlightbosses/textures/item/mossbound_home_medal.png
+          test -s src/main/resources/assets/arlightbosses/textures/block/home_medal_pedestal.png
+          git diff --check
+
+      - name: Guardar fuente 1.22.2 en la rama
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build.gradle BUILD_VERSION.txt SOURCE_VERSION.txt CAMBIOS_1.22.2.txt PROBAR_1.22.2.txt \
+            scripts/generate_1_22_2_textures.py src/main/java src/main/resources
+          if ! git diff --cached --quiet; then
+            git commit -m 'ArlightBosses 1.22.2: medallas reales y sincronización de pedestales'
+            git push origin HEAD:feature/1.22.2-real-medals-joint-sync
+          fi
+
+      - name: Compilar con Gradle
+        run: gradle --no-daemon clean build
+
+      - name: Verificar JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.2*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          test -n "$JAR"
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="1.22.2"'
+          jar tf "$JAR" | grep -q 'com/arlight/bosses/item/CampaignMedalItem.class'
+          jar tf "$JAR" | grep -q 'assets/arlightbosses/textures/block/home_medal_pedestal.png'
+          jar tf "$JAR" | grep -q 'assets/arlightbosses/geo/campaign_medal.geo.json'
+
+      - name: Reunir entregables
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/source
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.2*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          cp "$JAR" dist/ArlightBosses-1.22.2.jar
+          rsync -a --exclude '.git/' --exclude '.gradle/' --exclude 'build/' --exclude 'dist/' ./ dist/source/
+          (cd dist/source && zip -qr ../ArlightBosses-1.22.2-SOURCE.zip .)
+          sha256sum dist/ArlightBosses-1.22.2.jar dist/ArlightBosses-1.22.2-SOURCE.zip > dist/ArlightBosses-1.22.2-SHA256.txt
+
+      - name: Subir JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.2-JAR
+          path: dist/ArlightBosses-1.22.2.jar
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Subir fuente y hashes
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.2-SOURCE
+          path: |
+            dist/ArlightBosses-1.22.2-SOURCE.zip
+            dist/ArlightBosses-1.22.2-SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
