@@ -7,7 +7,7 @@ on:
       - feature/1.22.2-real-medals-joint-sync
     paths:
       - '.github/workflows/build-1.22.2.yml'
-      - '.github/import/1222.patch.gz.b64.part*'
+      - '.github/import/1222b.patch.gz.b64.part*'
       - 'src/**'
       - 'scripts/generate_1_22_2_textures.py'
       - 'build.gradle'
@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .github/import/1222.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1222.patch
+          cat .github/import/1222b.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1222.patch
           if ! grep -q "version = '1.22.2'" build.gradle; then
             git apply --binary /tmp/1222.patch
           fi
