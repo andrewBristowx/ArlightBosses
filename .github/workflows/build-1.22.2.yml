@@ -77,10 +77,18 @@ jobs:
           set -euo pipefail
           JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.2*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
           test -n "$JAR"
-          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -q 'version="1.22.2"'
-          jar tf "$JAR" | grep -q 'com/arlight/bosses/item/CampaignMedalItem.class'
-          jar tf "$JAR" | grep -q 'assets/arlightbosses/textures/block/home_medal_pedestal.png'
-          jar tf "$JAR" | grep -q 'assets/arlightbosses/geo/campaign_medal.geo.json'
+          echo "JAR verificado: $JAR"
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep -Fq '1.22.2'
+          CONTENTS="$(jar tf "$JAR")"
+          for ENTRY in \
+            'com/arlight/bosses/item/CampaignMedalItem.class' \
+            'com/arlight/bosses/block/entity/MedalPedestalBlockEntity.class' \
+            'assets/arlightbosses/textures/block/home_medal_pedestal.png' \
+            'assets/arlightbosses/textures/item/mossbound_home_medal.png' \
+            'assets/arlightbosses/geo/campaign_medal.geo.json' \
+            'assets/arlightbosses/geo/medal_pedestal.geo.json'; do
+            printf '%s\n' "$CONTENTS" | grep -Fxq "$ENTRY"
+          done
 
       - name: Reunir entregables
         shell: bash
