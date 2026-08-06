@@ -11,6 +11,7 @@ on:
   pull_request:
     branches:
       - main
+      - fix/1.22.10-epic-surface-guardian-cinematic
     paths:
       - '.github/workflows/build-1.22.8.yml'
       - '.github/import/12210-code.patch.gz.b64'
