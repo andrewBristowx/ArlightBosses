@@ -1,3 +1,4 @@
+# Internal CI trigger for ArlightBosses 1.22.10
 name: Compilar ArlightBosses 1.22.10
 
 on:
