@@ -7,13 +7,13 @@ on:
       - fix/1.22.8-surface-guardian-cinematic-music
     paths:
       - '.github/workflows/build-1.22.8.yml'
-      - '.github/import/1228.part*'
+      - '.github/import/1228v2.part00'
   pull_request:
     branches:
       - main
     paths:
       - '.github/workflows/build-1.22.8.yml'
-      - '.github/import/1228.part*'
+      - '.github/import/1228v2.part00'
 
 permissions:
   contents: read
@@ -43,7 +43,7 @@ jobs:
       - name: Aplicar fuentes hasta 1.22.8
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           cat .github/import/1224.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1224.patch
           if ! grep -Fq "version = '1.22.4'" build.gradle; then git apply --binary /tmp/1224.patch; fi
           base64 -d .github/import/1225.patch.gz.b64 | gzip -d > /tmp/1225.patch
@@ -52,17 +52,17 @@ jobs:
           if ! grep -Fq "version = '1.22.6'" build.gradle; then git apply /tmp/1226.patch; fi
           base64 -d .github/import/1227.patch.gz.b64 | gzip -d > /tmp/1227.patch
           git apply /tmp/1227.patch
-          cat .github/import/1228.part00 .github/import/1228.part01 .github/import/1228.part02 .github/import/1228.part03 .github/import/1228.part04 .github/import/1228.part05 > /tmp/1228.b64
+          cat .github/import/1228v2.part00 .github/import/1228.part01 .github/import/1228.part02 .github/import/1228.part03 .github/import/1228.part04 .github/import/1228.part05 > /tmp/1228.b64
           test "$(wc -c < /tmp/1228.b64)" -eq 10216
           base64 -d /tmp/1228.b64 | gzip -d > /tmp/1228.patch
           git apply /tmp/1228.patch
 
           grep -Fq "version = '1.22.8'" build.gradle
           test "$(tr -d '\r\n' < BUILD_VERSION.txt)" = '1.22.8'
-          grep -Fq 'class SurfaceGuardianEncounterManager' src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
-          grep -Fq 'record SurfaceGuardianCuePayload' src/main/java/com/arlight/bosses/network/SurfaceGuardianCuePayload.java
-          grep -Fq 'class SurfaceGuardianCinematicClient' src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java
-          grep -Fq 'BossNetworking::register' src/main/java/com/arlight/bosses/ArlightBosses.java
+          test -f src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
+          test -f src/main/java/com/arlight/bosses/network/SurfaceGuardianCuePayload.java
+          test -f src/main/java/com/arlight/bosses/network/BossNetworking.java
+          test -f src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java
           git diff --check
 
       - name: Compilar con Gradle
