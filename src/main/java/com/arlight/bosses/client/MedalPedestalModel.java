@@ -5,7 +5,11 @@ import com.arlight.bosses.block.entity.MedalPedestalBlockEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
-/** Modelo GeckoLib con textura completa propia para cada pedestal y su medalla. */
+/**
+ * Conserva exactamente los materiales visuales originales de los pedestales.
+ * La medalla se dibuja por separado para no sustituir el pedestal por una
+ * textura plana generada.
+ */
 public final class MedalPedestalModel extends GeoModel<MedalPedestalBlockEntity> {
     @Override public ResourceLocation getModelResource(MedalPedestalBlockEntity pedestal) {
         return BossClientEvents.id("geo/medal_pedestal.geo.json");
@@ -14,12 +18,16 @@ public final class MedalPedestalModel extends GeoModel<MedalPedestalBlockEntity>
     @Override public ResourceLocation getTextureResource(MedalPedestalBlockEntity pedestal) {
         if (pedestal.getBlockState().getBlock() instanceof MedalPedestalBlock block) {
             return switch (block.kind()) {
-                case HOME -> BossClientEvents.id("textures/block/home_medal_pedestal.png");
-                case TRADE -> BossClientEvents.id("textures/block/trade_medal_pedestal.png");
-                case BASTION -> BossClientEvents.id("textures/block/bastion_medal_pedestal.png");
+                case HOME -> ResourceLocation.fromNamespaceAndPath("minecraft",
+                        "textures/block/mossy_stone_bricks.png");
+                case TRADE -> ResourceLocation.fromNamespaceAndPath("minecraft",
+                        "textures/block/exposed_cut_copper.png");
+                case BASTION -> ResourceLocation.fromNamespaceAndPath("minecraft",
+                        "textures/block/chiseled_deepslate.png");
             };
         }
-        return BossClientEvents.id("textures/block/home_medal_pedestal.png");
+        return ResourceLocation.fromNamespaceAndPath("minecraft",
+                "textures/block/mossy_stone_bricks.png");
     }
 
     @Override public ResourceLocation getAnimationResource(MedalPedestalBlockEntity pedestal) {
