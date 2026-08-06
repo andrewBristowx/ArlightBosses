@@ -1,0 +1,11 @@
+PRUEBA ARLIGHTBOSSES 1.22.3
+
+1. Apagar servidor y cliente completamente.
+2. Sustituir ArlightBosses 1.22.2 por 1.22.3 en servidor y todos los clientes.
+3. Mantener ArlightBingo 1.48.44.
+4. Iniciar una prueba ritual limpia y ejecutar ritual give.
+5. Confirmar que los pedestales recuperaron su diseño anterior y no muestran superficies planas generadas.
+6. Confirmar que las tres medallas ya no parecen echo shard, lingote de oro o esmeralda.
+7. Insertar una medalla y comprobar que aparece flotando y girando sobre el pedestal sin cambiar su textura original.
+8. Insertar las tres y comprobar la secuencia conjunta y apertura de la reja.
+9. No promover como estable hasta completar la revisión visual dentro de Arclight.
