@@ -1,0 +1,126 @@
+name: Compilar ArlightBosses 1.22.3
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/1.22.3-restore-pedestals-medal-render
+    paths:
+      - '.github/workflows/build-1.22.3.yml'
+      - 'src/**'
+      - 'build.gradle'
+      - 'BUILD_VERSION.txt'
+      - 'SOURCE_VERSION.txt'
+      - 'CAMBIOS_1.22.3.txt'
+      - 'PROBAR_1.22.3.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Descargar rama candidata
+        uses: actions/checkout@v4
+        with:
+          ref: fix/1.22.3-restore-pedestals-medal-render
+          fetch-depth: 0
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Validar restauración visual
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "version = '1.22.3'" build.gradle
+          grep -Fq 'textures/block/mossy_stone_bricks.png' src/main/java/com/arlight/bosses/client/MedalPedestalModel.java
+          grep -Fq 'textures/block/exposed_cut_copper.png' src/main/java/com/arlight/bosses/client/MedalPedestalModel.java
+          grep -Fq 'textures/block/chiseled_deepslate.png' src/main/java/com/arlight/bosses/client/MedalPedestalModel.java
+          grep -Fq 'renderStatic' src/main/java/com/arlight/bosses/client/MedalPedestalRenderer.java
+          grep -Fq 'BossItems.MOSSBOUND_HOME_MEDAL' src/main/java/com/arlight/bosses/client/MedalPedestalRenderer.java
+          grep -Fq 'BossItems.GILDED_TRADE_MEDAL' src/main/java/com/arlight/bosses/client/MedalPedestalRenderer.java
+          grep -Fq 'BossItems.EMERALD_BASTION_MEDAL' src/main/java/com/arlight/bosses/client/MedalPedestalRenderer.java
+          for MODEL in \
+            src/main/resources/assets/arlightbosses/models/item/mossbound_home_medal.json \
+            src/main/resources/assets/arlightbosses/models/item/gilded_trade_medal.json \
+            src/main/resources/assets/arlightbosses/models/item/emerald_bastion_medal.json; do
+            python3 -m json.tool "$MODEL" >/dev/null
+            grep -Fq '"parent": "builtin/entity"' "$MODEL"
+          done
+          python3 -m json.tool src/main/resources/assets/arlightbosses/geo/medal_pedestal.geo.json >/dev/null
+          python3 -m json.tool src/main/resources/assets/arlightbosses/geo/campaign_medal.geo.json >/dev/null
+          git diff --check
+
+      - name: Compilar con Gradle
+        run: gradle --no-daemon clean build
+
+      - name: Verificar JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.3*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          test -n "$JAR"
+          test "$(basename "$JAR")" = 'ArlightBosses-1.22.3.jar'
+          unzip -tqq "$JAR"
+          jar tf "$JAR" > /tmp/jar-contents.txt
+          for ENTRY in \
+            'com/arlight/bosses/item/CampaignMedalItem.class' \
+            'com/arlight/bosses/client/CampaignMedalRenderer.class' \
+            'com/arlight/bosses/client/MedalPedestalRenderer.class' \
+            'assets/arlightbosses/geo/campaign_medal.geo.json' \
+            'assets/arlightbosses/geo/medal_pedestal.geo.json' \
+            'assets/arlightbosses/models/item/mossbound_home_medal.json' \
+            'assets/arlightbosses/models/item/gilded_trade_medal.json' \
+            'assets/arlightbosses/models/item/emerald_bastion_medal.json' \
+            'assets/arlightbosses/textures/item/mossbound_home_medal.png' \
+            'assets/arlightbosses/textures/item/gilded_trade_medal.png' \
+            'assets/arlightbosses/textures/item/emerald_bastion_medal.png'; do
+            grep -Fxq "$ENTRY" /tmp/jar-contents.txt
+          done
+          for MODEL in \
+            mossbound_home_medal \
+            gilded_trade_medal \
+            emerald_bastion_medal; do
+            unzip -p "$JAR" "assets/arlightbosses/models/item/${MODEL}.json" > "/tmp/${MODEL}.json"
+            grep -Fq '"parent": "builtin/entity"' "/tmp/${MODEL}.json"
+          done
+
+      - name: Reunir entregables
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/source
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.3*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          cp "$JAR" dist/ArlightBosses-1.22.3.jar
+          rsync -a --exclude '.git/' --exclude '.gradle/' --exclude 'build/' --exclude 'dist/' ./ dist/source/
+          (cd dist/source && zip -qr ../ArlightBosses-1.22.3-SOURCE.zip .)
+          sha256sum dist/ArlightBosses-1.22.3.jar dist/ArlightBosses-1.22.3-SOURCE.zip > dist/ArlightBosses-1.22.3-SHA256.txt
+
+      - name: Subir JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.3-JAR
+          path: dist/ArlightBosses-1.22.3.jar
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Subir fuente y hashes
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.3-SOURCE
+          path: |
+            dist/ArlightBosses-1.22.3-SOURCE.zip
+            dist/ArlightBosses-1.22.3-SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
