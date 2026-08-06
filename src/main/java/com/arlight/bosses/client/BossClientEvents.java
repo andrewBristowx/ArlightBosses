@@ -19,6 +19,7 @@ public final class BossClientEvents {
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(BossBlockEntities.NETHER_DUNGEON_LOCK.get(), NetherDungeonLockRenderer::new);
         event.registerBlockEntityRenderer(BossBlockEntities.CORRUPTED_PEARL_ALTAR.get(), CorruptedPearlAltarRenderer::new);
+        event.registerBlockEntityRenderer(BossBlockEntities.MEDAL_PEDESTAL.get(), MedalPedestalRenderer::new);
         event.registerBlockEntityRenderer(BossBlockEntities.TREASURE_CHEST.get(), TreasureChestRenderer::new);
         event.registerEntityRenderer(BossEntities.AMETHYST_CORRUPTED_ENDER_DRAGON.get(),
                 AmethystCorruptedDragonRenderer::new);
