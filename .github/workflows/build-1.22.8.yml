@@ -1,21 +1,19 @@
-name: Compilar ArlightBosses 1.22.8
+name: Compilar ArlightBosses 1.22.10
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - fix/1.22.8-surface-guardian-cinematic-music
+      - fix/1.22.10-epic-surface-guardian-cinematic
     paths:
       - '.github/workflows/build-1.22.8.yml'
-      - '.github/import/1228v2.part*'
-      - '.github/import/1228fix1.patch.gz.b64'
+      - '.github/import/12210-code.patch.gz.b64'
   pull_request:
     branches:
       - main
     paths:
       - '.github/workflows/build-1.22.8.yml'
-      - '.github/import/1228v2.part*'
-      - '.github/import/1228fix1.patch.gz.b64'
+      - '.github/import/12210-code.patch.gz.b64'
 
 permissions:
   contents: read
@@ -25,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - name: Descargar rama
+      - name: Descargar rama candidata
         uses: actions/checkout@v4
         with:
-          ref: fix/1.22.8-surface-guardian-cinematic-music
+          ref: fix/1.22.10-epic-surface-guardian-cinematic
           fetch-depth: 0
 
       - name: Configurar Java 21
@@ -42,7 +40,7 @@ jobs:
         with:
           gradle-version: '9.6.0'
 
-      - name: Aplicar fuentes hasta 1.22.8
+      - name: Aplicar fuentes hasta 1.22.10
         shell: bash
         run: |
           set -euxo pipefail
@@ -59,60 +57,47 @@ jobs:
           git apply /tmp/1228.patch
           base64 -d .github/import/1228fix1.patch.gz.b64 | gzip -d > /tmp/1228fix1.patch
           git apply /tmp/1228fix1.patch
+          base64 -d .github/import/12210-code.patch.gz.b64 | gzip -d > /tmp/12210.patch
+          git apply /tmp/12210.patch
 
-          grep -Fq "version = '1.22.8'" build.gradle
-          test "$(tr -d '\r\n' < BUILD_VERSION.txt)" = '1.22.8'
-          test -f src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
-          test -f src/main/java/com/arlight/bosses/network/SurfaceGuardianCuePayload.java
-          test -f src/main/java/com/arlight/bosses/network/BossNetworking.java
-          test -f src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java
-          grep -Fq 'MUSIC_DISC_RELIC.value()' src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java
-          ! grep -Fq 'camera.setMarker(true)' src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
+          grep -Fq "version = '1.22.10'" build.gradle
+          test "$(tr -d '\r\n' < BUILD_VERSION.txt)" = '1.22.10'
+          grep -Fq 'private static final int CINEMATIC_TICKS = 176' src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
+          grep -Fq 'RenderHandEvent' src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java
+          grep -Fq 'guardianFacingYaw' src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
+          grep -Fq 'SurfaceGuardianCinematicClient.isCinematicActive()' src/main/java/com/arlight/bosses/client/EpicBossBarOverlay.java
+          grep -Fq 'surface_guardian_boss_loop' src/main/resources/assets/arlightbosses/sounds.json
           git diff --check
 
       - name: Compilar con Gradle
         run: gradle --no-daemon clean build
 
-      - name: Verificar JAR
+      - name: Verificar JAR compilado
         shell: bash
         run: |
           set -euo pipefail
-          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.8*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.10*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
           test -n "$JAR"
-          test "$(basename "$JAR")" = 'ArlightBosses-1.22.8.jar'
+          test "$(basename "$JAR")" = 'ArlightBosses-1.22.10.jar'
           unzip -tqq "$JAR"
           jar tf "$JAR" > /tmp/jar-contents.txt
           grep -Fxq 'com/arlight/bosses/integration/SurfaceGuardianEncounterManager.class' /tmp/jar-contents.txt
-          grep -Fxq 'com/arlight/bosses/network/SurfaceGuardianCuePayload.class' /tmp/jar-contents.txt
-          grep -Fxq 'com/arlight/bosses/network/BossNetworking.class' /tmp/jar-contents.txt
           grep -Fxq 'com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.class' /tmp/jar-contents.txt
-          grep -Fxq 'com/arlight/bosses/entity/SurfaceGuardian.class' /tmp/jar-contents.txt
+          grep -Fxq 'com/arlight/bosses/client/EpicBossBarOverlay.class' /tmp/jar-contents.txt
+          grep -Fxq 'assets/arlightbosses/sounds.json' /tmp/jar-contents.txt
 
-      - name: Reunir entregables
+      - name: Reunir artefacto compilado
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist/source
-          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.8*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
-          cp "$JAR" dist/ArlightBosses-1.22.8.jar
-          rsync -a --exclude '.git/' --exclude '.gradle/' --exclude 'build/' --exclude 'dist/' --exclude '.github/import/' ./ dist/source/
-          (cd dist/source && zip -qr ../ArlightBosses-1.22.8-SOURCE.zip .)
-          sha256sum dist/ArlightBosses-1.22.8.jar dist/ArlightBosses-1.22.8-SOURCE.zip > dist/ArlightBosses-1.22.8-SHA256.txt
+          mkdir -p dist
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.10*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          cp "$JAR" dist/ArlightBosses-1.22.10-COMPILED.jar
 
-      - name: Subir JAR
+      - name: Subir JAR compilado
         uses: actions/upload-artifact@v4
         with:
-          name: ArlightBosses-1.22.8-JAR
-          path: dist/ArlightBosses-1.22.8.jar
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Subir fuente y hash
-        uses: actions/upload-artifact@v4
-        with:
-          name: ArlightBosses-1.22.8-SOURCE
-          path: |
-            dist/ArlightBosses-1.22.8-SOURCE.zip
-            dist/ArlightBosses-1.22.8-SHA256.txt
+          name: ArlightBosses-1.22.10-COMPILED
+          path: dist/ArlightBosses-1.22.10-COMPILED.jar
           if-no-files-found: error
           retention-days: 30
