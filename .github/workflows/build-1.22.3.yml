@@ -13,6 +13,9 @@ on:
       - 'SOURCE_VERSION.txt'
       - 'CAMBIOS_1.22.3.txt'
       - 'PROBAR_1.22.3.txt'
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
