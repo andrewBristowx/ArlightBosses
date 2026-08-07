@@ -20,6 +20,12 @@ public final class BossBlockEntities {
             BLOCK_ENTITY_TYPES.register("corrupted_pearl_altar", () -> BlockEntityType.Builder.of(
                     CorruptedPearlAltarBlockEntity::new, BossBlocks.CORRUPTED_PEARL_ALTAR.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MedalPedestalBlockEntity>> MEDAL_PEDESTAL =
+            BLOCK_ENTITY_TYPES.register("medal_pedestal", () -> BlockEntityType.Builder.of(
+                    MedalPedestalBlockEntity::new,
+                    BossBlocks.HOME_MEDAL_PEDESTAL.get(), BossBlocks.TRADE_MEDAL_PEDESTAL.get(),
+                    BossBlocks.BASTION_MEDAL_PEDESTAL.get()).build(null));
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TreasureChestBlockEntity>> TREASURE_CHEST =
             BLOCK_ENTITY_TYPES.register("treasure_chest", () -> BlockEntityType.Builder.of(
                     TreasureChestBlockEntity::new,

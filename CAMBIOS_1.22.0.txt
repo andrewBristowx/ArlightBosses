@@ -1,0 +1,6 @@
+ArlightBosses 1.22.0
+
+- Tres medallas de progresión del Overworld.
+- Tres pedestales temáticos animados mediante GeckoLib.
+- Estados persistentes: vacío, inserción, lleno, desbloqueo y desbloqueado.
+- Recursos sin recetas; ArlightBingo controla entrega, consumo y apertura de puertas.

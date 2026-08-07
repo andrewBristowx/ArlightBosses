@@ -1,0 +1,6 @@
+1. Instalar en servidor y cliente junto con ArlightBingo 1.48.44.
+2. Verificar las medallas en inventario, mano y suelo.
+3. Colocar cada medalla en su pedestal.
+4. Confirmar inserción visible, flotación continua y giro.
+5. Colocar la tercera y comprobar la animación conjunta.
+6. Ejecutar ritual reset y comprobar que desaparecen las medallas.

@@ -1,0 +1,63 @@
+name: PR ArlightBosses 1.22.6
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/1.22.6-dedicated-medal-display
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Aplicar fuentes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/import/1224.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1224.patch
+          git apply --binary /tmp/1224.patch
+          base64 -d .github/import/1225.patch.gz.b64 | gzip -d > /tmp/1225.patch
+          git apply /tmp/1225.patch
+          base64 -d .github/import/1226.patch.gz.b64 | gzip -d > /tmp/1226.patch
+          git apply /tmp/1226.patch
+          grep -Fq "version = '1.22.6'" build.gradle
+          git diff --check
+      - name: Compilar
+        run: gradle --no-daemon clean build
+      - name: Empaquetar
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/source
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.6*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          test -n "$JAR"
+          unzip -tqq "$JAR"
+          jar tf "$JAR" > /tmp/index
+          grep -Fxq 'com/arlight/bosses/entity/PedestalMedalDisplayEntity.class' /tmp/index
+          grep -Fxq 'com/arlight/bosses/client/PedestalMedalDisplayRenderer.class' /tmp/index
+          cp "$JAR" dist/ArlightBosses-1.22.6.jar
+          rsync -a --exclude '.git/' --exclude '.gradle/' --exclude 'build/' --exclude 'dist/' --exclude '.github/import/' ./ dist/source/
+          (cd dist/source && zip -qr ../ArlightBosses-1.22.6-SOURCE.zip .)
+          sha256sum dist/ArlightBosses-1.22.6.jar dist/ArlightBosses-1.22.6-SOURCE.zip > dist/ArlightBosses-1.22.6-SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.6-JAR
+          path: dist/ArlightBosses-1.22.6.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.6-SOURCE
+          path: |
+            dist/ArlightBosses-1.22.6-SOURCE.zip
+            dist/ArlightBosses-1.22.6-SHA256.txt
