@@ -1,0 +1,102 @@
+ import net.minecraft.world.entity.Entity;
+ import net.neoforged.bus.api.SubscribeEvent;
+ import net.neoforged.neoforge.client.event.ClientTickEvent;
+-import net.neoforged.neoforge.client.event.RenderGuiEvent;
++import net.neoforged.neoforge.client.event.RenderFrameEvent;
+ import net.neoforged.neoforge.client.event.RenderHandEvent;
+ 
+ /** Estado visual local de la entrada y música del Guardián. */
+@@ -24,6 +24,8 @@
+     private static int cinematicTicks;
+     private static int cinematicDuration;
+     private static int cameraLookupTicks;
++    private static boolean previousHideGui;
++    private static boolean hideGuiCaptured;
+     private static final ResourceLocation BOSS_INTRO = ResourceLocation.parse("arlightbosses:surface_guardian_boss_intro");
+     private static final ResourceLocation BOSS_LOOP = ResourceLocation.parse("arlightbosses:surface_guardian_boss_loop");
+     private static final int INTRO_TICKS = 250;
+@@ -49,6 +51,14 @@
+     }
+ 
+     private static void start(SurfaceGuardianCuePayload payload) {
++        Minecraft minecraft = Minecraft.getInstance();
++        if (!hideGuiCaptured) {
++            previousHideGui = minecraft.options.hideGui;
++            hideGuiCaptured = true;
++        }
++        // La cinemática usa el mismo estado que F1 para ocultar también minimapas
++        // y overlays de mods que respetan la interfaz vanilla. Se restaura al finalizar.
++        minecraft.options.hideGui = true;
+         cinematicActive = true;
+         cameraEntityId = payload.cameraEntityId();
+         bossEntityId = payload.bossEntityId();
+@@ -69,6 +79,10 @@
+     private static void endCinematic(boolean stopMusic) {
+         Minecraft minecraft = Minecraft.getInstance();
+         cinematicActive = false;
++        if (hideGuiCaptured) {
++            minecraft.options.hideGui = previousHideGui;
++            hideGuiCaptured = false;
++        }
+         cameraEntityId = -1;
+         cameraLookupTicks = 0;
+         if (minecraft.player != null) minecraft.setCameraEntity(minecraft.player);
+@@ -117,6 +131,9 @@
+         tickMusic(minecraft);
+         if (!cinematicActive) return;
+ 
++        // Si el usuario pulsa F1 o algún mod intenta reactivar el HUD durante la toma,
++        // mantenemos la interfaz oculta hasta recibir END/STOP.
++        minecraft.options.hideGui = true;
+         cinematicTicks++;
+         Entity camera = minecraft.level.getEntity(cameraEntityId);
+         if (camera != null) {
+@@ -146,11 +163,21 @@
+         }
+     }
+ 
++    /**
++     * Dibuja las barras/títulos después de renderizar el frame completo. Esto permite
++     * mantener options.hideGui=true (ocultando minimapa/HUD) sin perder la presentación.
++     */
+     @SubscribeEvent
+-    public static void renderOverlay(RenderGuiEvent.Post event) {
++    public static void renderCinematicFrame(RenderFrameEvent.Post event) {
+         if (!cinematicActive) return;
+-        GuiGraphics graphics = event.getGuiGraphics();
+         Minecraft minecraft = Minecraft.getInstance();
++        if (minecraft.level == null || minecraft.player == null) return;
++        GuiGraphics graphics = new GuiGraphics(minecraft, minecraft.renderBuffers().bufferSource());
++        renderOverlay(graphics, minecraft);
++        graphics.flush();
++    }
++
++    private static void renderOverlay(GuiGraphics graphics, Minecraft minecraft) {
+         int width = graphics.guiWidth();
+         int height = graphics.guiHeight();
+         int bar = Math.max(36, height / 7);
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java /mnt/data/bosses-src/src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
+--- a/src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java	2026-08-06 19:26:47.000000000 +0000
++++ b/src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java	2026-08-07 01:31:41.199505665 +0000
+@@ -17,6 +17,7 @@
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.MobSpawnType;
+ import net.minecraft.world.entity.decoration.ArmorStand;
++import net.minecraft.world.level.ChunkPos;
+ import net.minecraft.world.level.block.Blocks;
+ import net.minecraft.world.phys.AABB;
+ import net.minecraft.world.phys.Vec3;
+@@ -46,7 +47,8 @@
+ 
+     private static final int CINEMATIC_TICKS = 176;
+     private static final double VIEW_RADIUS = 96.0D;
+-    private static final double ENTRANCE_DISTANCE = 46.0D;
++    private static final double ENTRANCE_DISTANCE = 48.0D;
++    private static final double CINEMATIC_CHUNK_MARGIN = 24.0D;
+     private static final Map<UUID, Encounter> ENCOUNTERS = new HashMap<>();
+ 
+     private SurfaceGuardianEncounterManager() { }
+@@ -56,7 +58,15 @@
+         Iterator<Map.Entry<UUID, Encounter>> iterator = ENCOUNTERS.entrySet().iterator();
+         while (iterator.hasNext()) {
+             Encounter encounter = iterator.next().getValue();
