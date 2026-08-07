@@ -1,0 +1,95 @@
+-            position = lerp(center.add(1.2D, 5.05D, -ENTRANCE_DISTANCE + 2.5D),
+-                    center.add(-4.4D, 3.75D, -13.2D), p);
+-        } else if (tick < 138) {
+-            double p = smooth((tick - 86.0D) / 52.0D);
+-            double angle = Math.toRadians(-36.0D + 72.0D * p);
+-            double radius = 10.4D - 3.2D * p;
+-            position = new Vec3(center.x + Math.sin(angle) * radius,
+-                    center.y + 3.65D - 0.55D * p,
+-                    center.z - Math.cos(angle) * radius);
++        if (tick < 56) {
++            double p = smooth(tick / 56.0D);
++            position = lerp(entrance.add(0.0D, 3.45D, -1.15D),
++                    entrance.add(0.0D, 3.35D, 0.65D), p);
++        } else if (tick < 118) {
++            double p = smooth((tick - 56.0D) / 62.0D);
++            position = lerp(entrance.add(0.0D, 3.35D, 0.65D),
++                    entrance.add(-1.35D, 3.20D, 3.10D), p);
++        } else if (tick < 154) {
++            double p = smooth((tick - 118.0D) / 36.0D);
++            position = lerp(entrance.add(-1.35D, 3.20D, 3.10D),
++                    entrance.add(1.10D, 3.10D, 2.35D), p);
+         } else {
+-            double p = smooth((tick - 138.0D) / Math.max(1.0D, CINEMATIC_TICKS - 138.0D));
+-            position = lerp(center.add(4.25D, 3.05D, -5.85D),
+-                    center.add(0.75D, 3.45D, -13.8D), p);
++            double p = smooth((tick - 154.0D) / Math.max(1.0D, CINEMATIC_TICKS - 154.0D));
++            position = lerp(entrance.add(1.10D, 3.10D, 2.35D),
++                    entrance.add(0.0D, 3.25D, 0.85D), p);
+         }
+ 
+         double shake = cameraShake(tick);
+         if (shake > 0.0D) {
+             position = position.add(
+                     Math.sin(tick * 2.37D) * shake,
+-                    Math.cos(tick * 1.91D) * shake * 0.55D,
+-                    Math.sin(tick * 2.83D) * shake);
++                    Math.cos(tick * 1.91D) * shake * 0.35D,
++                    Math.sin(tick * 2.83D) * shake * 0.45D);
+         }
+ 
+         Vec3 target = new Vec3(encounter.guardian.getX(),
+-                Math.max(center.y + 1.35D, encounter.guardian.getY() + 1.55D),
++                Math.max(center.y + 1.45D, encounter.guardian.getY() + 1.55D),
+                 encounter.guardian.getZ());
+         camera.moveTo(position.x, position.y, position.z,
+                 yawTo(position.x, position.z, target),
+@@ -341,16 +354,17 @@
+ 
+     private static double cameraShake(int tick) {
+         if (tick >= 18 && tick <= 38) {
+-            return 0.24D * (1.0D - (tick - 18.0D) / 20.0D);
++            return 0.055D * (1.0D - (tick - 18.0D) / 20.0D);
+         }
+         if (tick >= 101 && tick <= 116) {
+-            return 0.34D * (1.0D - (tick - 101.0D) / 15.0D);
++            return 0.085D * (1.0D - (tick - 101.0D) / 15.0D);
+         }
+         return 0.0D;
+     }
+ 
+     private static void finishCinematic(Encounter encounter) {
+         if (encounter.camera != null) encounter.camera.discard();
++        releaseCinematicChunks(encounter.level, encounter.forcedChunks);
+         for (ServerPlayer player : encounter.viewers) {
+             PacketDistributor.sendToPlayer(player, new SurfaceGuardianCuePayload(
+                     SurfaceGuardianCuePayload.END_CINEMATIC_KEEP_MUSIC,
+@@ -398,6 +412,7 @@
+ 
+     private static void stopEncounter(Encounter encounter, boolean removeBoss) {
+         if (encounter.camera != null) encounter.camera.discard();
++        releaseCinematicChunks(encounter.level, encounter.forcedChunks);
+         if (removeBoss && encounter.guardian != null) encounter.guardian.discard();
+         sendStop(encounter.viewers);
+     }
+@@ -443,10 +458,34 @@
+         return center.add(0.0D, 0.0D, -ENTRANCE_DISTANCE);
+     }
+ 
+-    /** El modelo está orientado 180° respecto al frente vanilla, por eso se compensa aquí. */
++    /** Orienta el frente visual del modelo directamente hacia la puerta de la arena. */
+     private static float guardianFacingYaw(Vec3 center) {
+         Vec3 entrance = entrancePoint(center);
+-        return Mth.wrapDegrees(yawTo(center.x, center.z, entrance) + 180.0F);
++        return Mth.wrapDegrees(yawTo(center.x, center.z, entrance));
++    }
++
++    private static List<ChunkPos> forceCinematicChunks(ServerLevel level, Vec3 entrance, Vec3 center) {
++        int minChunkX = ((int) Math.floor(Math.min(entrance.x, center.x) - CINEMATIC_CHUNK_MARGIN)) >> 4;
++        int maxChunkX = ((int) Math.floor(Math.max(entrance.x, center.x) + CINEMATIC_CHUNK_MARGIN)) >> 4;
++        int minChunkZ = ((int) Math.floor(Math.min(entrance.z, center.z) - CINEMATIC_CHUNK_MARGIN)) >> 4;
++        int maxChunkZ = ((int) Math.floor(Math.max(entrance.z, center.z) + CINEMATIC_CHUNK_MARGIN)) >> 4;
++        List<ChunkPos> forced = new ArrayList<>();
++        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
++            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
++                if (level.setChunkForced(chunkX, chunkZ, true)) {
