@@ -1,0 +1,96 @@
+name: Compilar ArlightParkourAssets 1.0.0
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    if: contains(github.event.comment.body, '/build-parkour-assets-1.0.0')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Registrar ejecución
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/run-info
+          printf '%s\n' "$GITHUB_RUN_ID" > .github/run-info/PARKOUR_ASSETS_RUN_ID.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/run-info/PARKOUR_ASSETS_RUN_ID.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Registrar build ArlightParkourAssets ${GITHUB_RUN_ID}"
+            git push origin HEAD:main
+          fi
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Descargar fuente
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 5 --retry-delay 3 \
+            'https://drive.usercontent.google.com/download?id=1KVrrCry87bDj1Qf9PD8k9CtpVSIBa_bz&export=download&confirm=t' \
+            -o /tmp/ArlightParkourAssets-source.zip
+          mkdir -p /tmp/arlight-parkour-assets
+          unzip -q /tmp/ArlightParkourAssets-source.zip -d /tmp/arlight-parkour-assets
+          SOURCE_ROOT="$(find /tmp/arlight-parkour-assets -type f -name build.gradle -printf '%h\n' | head -n 1)"
+          test -n "$SOURCE_ROOT"
+          echo "SOURCE_ROOT=$SOURCE_ROOT" >> "$GITHUB_ENV"
+          sed -i 's#gradle-[0-9.]*-bin.zip#gradle-8.14.3-bin.zip#' "$SOURCE_ROOT/gradle/wrapper/gradle-wrapper.properties"
+          chmod +x "$SOURCE_ROOT/gradlew"
+
+      - name: Compilar NeoForge y GeckoLib
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$SOURCE_ROOT"
+          ./gradlew --no-daemon clean build
+
+      - name: Validar JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$SOURCE_ROOT"
+          JAR="$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' -print -quit)"
+          test -n "$JAR"
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep 'modId="arlightparkourassets"'
+          unzip -p "$JAR" META-INF/neoforge.mods.toml | grep 'version="1.0.0"'
+          jar tf "$JAR" | grep 'com/arlight/parkourassets/block/entity/AnimatedObstacleBlockEntity.class'
+          jar tf "$JAR" | grep 'assets/arlightparkourassets/geo/hammer.geo.json'
+          jar tf "$JAR" | grep 'assets/arlightparkourassets/animations/fan.animation.json'
+          if jar tf "$JAR" | grep -q '^net/minecraft/'; then
+            echo 'ERROR: el JAR incluye clases de Minecraft' >&2
+            exit 1
+          fi
+          if jar tf "$JAR" | grep -q '^net/neoforged/'; then
+            echo 'ERROR: el JAR incluye clases de NeoForge' >&2
+            exit 1
+          fi
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cp "$JAR" "$GITHUB_WORKSPACE/dist/ArlightParkourAssets-1.0.0.jar"
+          sha256sum "$GITHUB_WORKSPACE/dist/ArlightParkourAssets-1.0.0.jar" > "$GITHUB_WORKSPACE/dist/ArlightParkourAssets-1.0.0-SHA256.txt"
+
+      - name: Subir JAR compilado
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightParkourAssets-1.0.0
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
