@@ -1,0 +1,103 @@
+name: Compilar ArlightBosses 1.22.10
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/1.22.10-epic-surface-guardian-cinematic
+    paths:
+      - '.github/workflows/build-1.22.10.yml'
+      - '.github/import/12210-code.patch.gz.b64'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-1.22.10.yml'
+      - '.github/import/12210-code.patch.gz.b64'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Descargar rama candidata
+        uses: actions/checkout@v4
+        with:
+          ref: fix/1.22.10-epic-surface-guardian-cinematic
+          fetch-depth: 0
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Aplicar fuentes hasta 1.22.10
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cat .github/import/1224.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1224.patch
+          if ! grep -Fq "version = '1.22.4'" build.gradle; then git apply --binary /tmp/1224.patch; fi
+          base64 -d .github/import/1225.patch.gz.b64 | gzip -d > /tmp/1225.patch
+          if ! grep -Fq "version = '1.22.5'" build.gradle; then git apply /tmp/1225.patch; fi
+          base64 -d .github/import/1226.patch.gz.b64 | gzip -d > /tmp/1226.patch
+          if ! grep -Fq "version = '1.22.6'" build.gradle; then git apply /tmp/1226.patch; fi
+          base64 -d .github/import/1227.patch.gz.b64 | gzip -d > /tmp/1227.patch
+          git apply /tmp/1227.patch
+          cat .github/import/1228v2.part00 .github/import/1228v2.part01 .github/import/1228v2.part02 .github/import/1228v2.part03 .github/import/1228v2.part04 .github/import/1228v2.part05 > /tmp/1228.b64
+          base64 -d /tmp/1228.b64 | gzip -d > /tmp/1228.patch
+          git apply /tmp/1228.patch
+          base64 -d .github/import/1228fix1.patch.gz.b64 | gzip -d > /tmp/1228fix1.patch
+          git apply /tmp/1228fix1.patch
+          base64 -d .github/import/12210-code.patch.gz.b64 | gzip -d > /tmp/12210.patch
+          git apply /tmp/12210.patch
+
+          grep -Fq "version = '1.22.10'" build.gradle
+          test "$(tr -d '\r\n' < BUILD_VERSION.txt)" = '1.22.10'
+          grep -Fq 'private static final int CINEMATIC_TICKS = 176' src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
+          grep -Fq 'RenderHandEvent' src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java
+          grep -Fq 'guardianFacingYaw' src/main/java/com/arlight/bosses/integration/SurfaceGuardianEncounterManager.java
+          grep -Fq 'SurfaceGuardianCinematicClient.isCinematicActive()' src/main/java/com/arlight/bosses/client/EpicBossBarOverlay.java
+          grep -Fq 'surface_guardian_boss_loop' src/main/resources/assets/arlightbosses/sounds.json
+          git diff --check
+
+      - name: Compilar con Gradle
+        run: gradle --no-daemon clean build
+
+      - name: Verificar JAR compilado
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.10*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          test -n "$JAR"
+          test "$(basename "$JAR")" = 'ArlightBosses-1.22.10.jar'
+          unzip -tqq "$JAR"
+          jar tf "$JAR" > /tmp/jar-contents.txt
+          grep -Fxq 'com/arlight/bosses/integration/SurfaceGuardianEncounterManager.class' /tmp/jar-contents.txt
+          grep -Fxq 'com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.class' /tmp/jar-contents.txt
+          grep -Fxq 'com/arlight/bosses/client/EpicBossBarOverlay.class' /tmp/jar-contents.txt
+          grep -Fxq 'assets/arlightbosses/sounds.json' /tmp/jar-contents.txt
+
+      - name: Reunir artefacto compilado
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.10*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          cp "$JAR" dist/ArlightBosses-1.22.10-COMPILED.jar
+
+      - name: Subir JAR compilado
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.10-COMPILED
+          path: dist/ArlightBosses-1.22.10-COMPILED.jar
+          if-no-files-found: error
+          retention-days: 30
