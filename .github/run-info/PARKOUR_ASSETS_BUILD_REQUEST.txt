@@ -1,0 +1,1 @@
+El workflow build-parkour-assets.yml se activa mediante un comentario en una incidencia con el texto /build-parkour-assets-1.0.0.
