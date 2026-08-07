@@ -1,0 +1,76 @@
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/BUILD_VERSION.txt /mnt/data/bosses-src/BUILD_VERSION.txt
+--- a/BUILD_VERSION.txt	2026-08-06 19:26:47.000000000 +0000
++++ b/BUILD_VERSION.txt	2026-08-07 01:18:19.349465507 +0000
+@@ -1 +1 @@
+-1.22.10
++1.22.12
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/CAMBIOS_1.22.11.txt /mnt/data/bosses-src/CAMBIOS_1.22.11.txt
+--- a/CAMBIOS_1.22.11.txt	1970-01-01 00:00:00.000000000 +0000
++++ b/CAMBIOS_1.22.11.txt	2026-08-07 00:46:31.507982438 +0000
+@@ -0,0 +1,6 @@
++ArlightBosses 1.22.11 - SURFACE GUARDIAN CINEMATIC CRASH FIX
++
++- Corrige el cierre completo del servidor al ejecutar /bingo template overworld boss test cinematic.
++- Adapta SoundEvents.GENERIC_EXPLODE al Holder de Minecraft/NeoForge 1.21.1 mediante .value().
++- Corrige las dos explosiones de la cinemática: aparición (tick 20) y rugido (tick 104).
++- Añade una barrera de seguridad por encuentro: cualquier fallo futuro cancela y limpia la cinemática sin propagar el error al tick principal del servidor.
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/CAMBIOS_1.22.12.txt /mnt/data/bosses-src/CAMBIOS_1.22.12.txt
+--- a/CAMBIOS_1.22.12.txt	1970-01-01 00:00:00.000000000 +0000
++++ b/CAMBIOS_1.22.12.txt	2026-08-07 01:18:19.349738831 +0000
+@@ -0,0 +1,9 @@
++ArlightBosses 1.22.12 - DOOR CINEMATIC CAMERA + HUD RESTORE
++
++- Corrige definitivamente la orientación del Guardián de la Superficie: mira hacia la puerta/jugadores.
++- Reescribe la cámara: comienza y permanece en la puerta, con dolly corto y desplazamientos suaves; elimina la órbita agresiva dentro de la arena.
++- Reduce el temblor de cámara para evitar movimientos bruscos.
++- Fuerza temporalmente los chunks entre la puerta y la plataforma durante la cinemática y los libera al terminar/cancelar.
++- Activa hideGui durante la toma para ocultar HUD y minimapas que respetan F1; restaura exactamente el estado anterior al finalizar o cancelar.
++- Mueve las barras/títulos cinematográficos a RenderFrameEvent.Post para mantenerlos visibles aunque hideGui esté activo.
++- Mantiene el fail-safe del encuentro para evitar que un efecto vuelva a cerrar el servidor.
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/PROBAR_1.22.11.txt /mnt/data/bosses-src/PROBAR_1.22.11.txt
+--- a/PROBAR_1.22.11.txt	1970-01-01 00:00:00.000000000 +0000
++++ b/PROBAR_1.22.11.txt	2026-08-07 00:46:31.508048256 +0000
+@@ -0,0 +1,7 @@
++1. Instalar ArlightBosses 1.22.11 en servidor y clientes; eliminar 1.22.10.
++2. Mantener ArlightBingo 1.48.51.
++3. Reiniciar completamente el servidor.
++4. Ejecutar: /bingo template overworld boss test cinematic
++5. Confirmar que supera el primer impacto (tick 20), completa el rugido (tick 104) y termina sin cerrar el servidor.
++6. Ejecutar: /bingo template overworld boss test stop
++7. Confirmar que HUD, cámara, música, jefe y partículas se limpian.
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/PROBAR_1.22.12.txt /mnt/data/bosses-src/PROBAR_1.22.12.txt
+--- a/PROBAR_1.22.12.txt	1970-01-01 00:00:00.000000000 +0000
++++ b/PROBAR_1.22.12.txt	2026-08-07 01:18:19.349767253 +0000
+@@ -0,0 +1,10 @@
++Prueba ArlightBosses 1.22.12
++
++1. Instala ArlightBosses-1.22.12.jar en servidor y cliente.
++2. Mantén ArlightBingo 1.48.52 o superior.
++3. Ejecuta: /bingo template overworld boss test stop
++4. Ejecuta: /bingo template overworld boss test cinematic
++5. Verifica: cámara en puerta, boss de frente, minimapa/HUD ocultos y títulos visibles.
++6. Al terminar, el minimapa/HUD deben volver al mismo estado anterior.
++7. Ejecuta stop a mitad de cinemática y verifica también la restauración.
++8. Prueba el flujo real abriendo la puerta ritual: la cinemática debe comenzar automáticamente.
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/SOURCE_VERSION.txt /mnt/data/bosses-src/SOURCE_VERSION.txt
+--- a/SOURCE_VERSION.txt	2026-08-06 19:27:39.000000000 +0000
++++ b/SOURCE_VERSION.txt	2026-08-07 01:18:19.349539977 +0000
+@@ -1 +1 @@
+-1.22.10
++1.22.12
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/build.gradle /mnt/data/bosses-src/build.gradle
+--- a/build.gradle	2026-08-06 19:26:47.000000000 +0000
++++ b/build.gradle	2026-08-07 01:18:19.349394932 +0000
+@@ -3,7 +3,7 @@
+     id 'net.neoforged.gradle.userdev' version '7.1.38'
+ }
+ 
+-version = '1.22.10'
++version = '1.22.12'
+ group = 'com.arlight.bosses'
+ base { archivesName = 'ArlightBosses' }
+ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java /mnt/data/bosses-src/src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java
+--- a/src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java	2026-08-06 19:26:47.000000000 +0000
++++ b/src/main/java/com/arlight/bosses/client/cinematic/SurfaceGuardianCinematicClient.java	2026-08-07 01:18:19.348895814 +0000
+@@ -12,7 +12,7 @@
