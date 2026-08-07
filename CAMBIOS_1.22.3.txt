@@ -1,0 +1,9 @@
+ArlightBosses 1.22.3
+
+- Restaura exactamente la geometría anterior de los tres pedestales.
+- Restaura los materiales originales: ladrillos musgosos, cobre expuesto y pizarra profunda cincelada.
+- Elimina las texturas planas generadas del render de los pedestales colocados.
+- Corrige los modelos de inventario de las tres medallas para usar builtin/entity.
+- Renderiza cada medalla GeckoLib real como pieza independiente sobre su pedestal.
+- Conserva la sincronización de estados y las animaciones EMPTY, INSERTING, FILLED, UNLOCKING y UNLOCKED.
+- ArlightBingo 1.48.44 no necesita cambios para esta corrección.

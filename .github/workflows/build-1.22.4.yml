@@ -1,0 +1,182 @@
+name: Compilar ArlightBosses 1.22.4
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/1.22.4-final-medals-visible-items
+    paths:
+      - '.github/workflows/build-1.22.4.yml'
+      - '.github/import/1224.patch.gz.b64.part*'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-1.22.4.yml'
+      - '.github/import/1224.patch.gz.b64.part*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Descargar rama candidata
+        uses: actions/checkout@v4
+        with:
+          ref: feature/1.22.4-final-medals-visible-items
+          fetch-depth: 0
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Aplicar implementación 1.22.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/import/1224.patch.gz.b64.part* | base64 -d | gzip -d > /tmp/1224.patch
+          if ! grep -Fq "version = '1.22.4'" build.gradle; then
+            patch -p1 < /tmp/1224.patch
+          fi
+
+          grep -Fq "version = '1.22.4'" build.gradle
+          test "$(tr -d '\r\n' < BUILD_VERSION.txt)" = '1.22.4'
+          grep -Fq 'FINAL-MEDALS-VISIBLE-PEDESTALS-RITUAL' SOURCE_VERSION.txt
+
+          for MODEL in \
+            src/main/resources/assets/arlightbosses/models/item/home_medal_pedestal.json \
+            src/main/resources/assets/arlightbosses/models/item/trade_medal_pedestal.json \
+            src/main/resources/assets/arlightbosses/models/item/bastion_medal_pedestal.json \
+            src/main/resources/assets/arlightbosses/models/item/mossbound_home_medal.json \
+            src/main/resources/assets/arlightbosses/models/item/gilded_trade_medal.json \
+            src/main/resources/assets/arlightbosses/models/item/emerald_bastion_medal.json; do
+            python3 -m json.tool "$MODEL" >/dev/null
+            grep -Fq '"parent": "builtin/entity"' "$MODEL"
+          done
+
+          for JSON in \
+            src/main/resources/assets/arlightbosses/geo/item/mossbound_home_medal.geo.json \
+            src/main/resources/assets/arlightbosses/geo/item/gilded_trade_medal.geo.json \
+            src/main/resources/assets/arlightbosses/geo/item/emerald_bastion_medal.geo.json \
+            src/main/resources/assets/arlightbosses/animations/campaign_medal.animation.json; do
+            python3 -m json.tool "$JSON" >/dev/null
+          done
+
+          grep -Fq 'renderByItem' src/main/java/com/arlight/bosses/client/MedalPedestalRenderer.java
+          grep -Fq 'AutoGlowingGeoLayer' src/main/java/com/arlight/bosses/client/CampaignMedalRenderer.java
+          git diff --check
+
+      - name: Guardar fuente aplicada en la rama
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build.gradle BUILD_VERSION.txt SOURCE_VERSION.txt \
+            CAMBIOS_1.22.4.txt PROBAR_1.22.4.txt \
+            src/main/java/com/arlight/bosses/client/CampaignMedalModel.java \
+            src/main/java/com/arlight/bosses/client/CampaignMedalRenderer.java \
+            src/main/java/com/arlight/bosses/client/MedalPedestalRenderer.java \
+            src/main/resources/assets/arlightbosses/animations/campaign_medal.animation.json \
+            src/main/resources/assets/arlightbosses/geo/item \
+            src/main/resources/assets/arlightbosses/models/item/home_medal_pedestal.json \
+            src/main/resources/assets/arlightbosses/models/item/trade_medal_pedestal.json \
+            src/main/resources/assets/arlightbosses/models/item/bastion_medal_pedestal.json \
+            src/main/resources/assets/arlightbosses/models/item/mossbound_home_medal.json \
+            src/main/resources/assets/arlightbosses/models/item/gilded_trade_medal.json \
+            src/main/resources/assets/arlightbosses/models/item/emerald_bastion_medal.json \
+            src/main/resources/assets/arlightbosses/textures/item/mossbound_home_medal.png \
+            src/main/resources/assets/arlightbosses/textures/item/mossbound_home_medal_glowmask.png \
+            src/main/resources/assets/arlightbosses/textures/item/gilded_trade_medal.png \
+            src/main/resources/assets/arlightbosses/textures/item/gilded_trade_medal_glowmask.png \
+            src/main/resources/assets/arlightbosses/textures/item/emerald_bastion_medal.png \
+            src/main/resources/assets/arlightbosses/textures/item/emerald_bastion_medal_glowmask.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'ArlightBosses 1.22.4: medallas finales y pedestales visibles'
+            git push origin HEAD:feature/1.22.4-final-medals-visible-items
+          fi
+
+      - name: Compilar con Gradle
+        run: gradle --no-daemon clean build
+
+      - name: Verificar JAR y recursos
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.4*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          test -n "$JAR"
+          test "$(basename "$JAR")" = 'ArlightBosses-1.22.4.jar'
+          unzip -tqq "$JAR"
+          jar tf "$JAR" > /tmp/jar-contents.txt
+
+          for ENTRY in \
+            'com/arlight/bosses/item/CampaignMedalItem.class' \
+            'com/arlight/bosses/item/MedalPedestalBlockItem.class' \
+            'com/arlight/bosses/client/CampaignMedalRenderer.class' \
+            'com/arlight/bosses/client/MedalPedestalItemRenderer.class' \
+            'com/arlight/bosses/client/MedalPedestalRenderer.class' \
+            'assets/arlightbosses/geo/item/mossbound_home_medal.geo.json' \
+            'assets/arlightbosses/geo/item/gilded_trade_medal.geo.json' \
+            'assets/arlightbosses/geo/item/emerald_bastion_medal.geo.json' \
+            'assets/arlightbosses/models/item/home_medal_pedestal.json' \
+            'assets/arlightbosses/models/item/trade_medal_pedestal.json' \
+            'assets/arlightbosses/models/item/bastion_medal_pedestal.json' \
+            'assets/arlightbosses/models/item/mossbound_home_medal.json' \
+            'assets/arlightbosses/models/item/gilded_trade_medal.json' \
+            'assets/arlightbosses/models/item/emerald_bastion_medal.json' \
+            'assets/arlightbosses/textures/item/mossbound_home_medal.png' \
+            'assets/arlightbosses/textures/item/mossbound_home_medal_glowmask.png' \
+            'assets/arlightbosses/textures/item/gilded_trade_medal.png' \
+            'assets/arlightbosses/textures/item/gilded_trade_medal_glowmask.png' \
+            'assets/arlightbosses/textures/item/emerald_bastion_medal.png' \
+            'assets/arlightbosses/textures/item/emerald_bastion_medal_glowmask.png'; do
+            grep -Fxq "$ENTRY" /tmp/jar-contents.txt
+          done
+
+          for MODEL in \
+            home_medal_pedestal trade_medal_pedestal bastion_medal_pedestal \
+            mossbound_home_medal gilded_trade_medal emerald_bastion_medal; do
+            unzip -p "$JAR" "assets/arlightbosses/models/item/${MODEL}.json" > "/tmp/${MODEL}.json"
+            grep -Fq '"parent": "builtin/entity"' "/tmp/${MODEL}.json"
+          done
+
+      - name: Reunir entregables
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/source
+          JAR="$(find build/libs -maxdepth 1 -type f -name 'ArlightBosses-1.22.4*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          cp "$JAR" dist/ArlightBosses-1.22.4.jar
+          rsync -a --exclude '.git/' --exclude '.gradle/' --exclude 'build/' --exclude 'dist/' --exclude '.github/import/' ./ dist/source/
+          (cd dist/source && zip -qr ../ArlightBosses-1.22.4-SOURCE.zip .)
+          sha256sum dist/ArlightBosses-1.22.4.jar dist/ArlightBosses-1.22.4-SOURCE.zip > dist/ArlightBosses-1.22.4-SHA256.txt
+
+      - name: Subir JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.4-JAR
+          path: dist/ArlightBosses-1.22.4.jar
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Subir fuente y hashes
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.4-SOURCE
+          path: |
+            dist/ArlightBosses-1.22.4-SOURCE.zip
+            dist/ArlightBosses-1.22.4-SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
