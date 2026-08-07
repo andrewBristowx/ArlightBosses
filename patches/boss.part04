@@ -1,0 +1,35 @@
++                    forced.add(new ChunkPos(chunkX, chunkZ));
++                }
++            }
++        }
++        return forced;
++    }
++
++    private static void releaseCinematicChunks(ServerLevel level, List<ChunkPos> chunks) {
++        if (chunks == null || chunks.isEmpty()) return;
++        for (ChunkPos chunk : chunks) {
++            level.setChunkForced(chunk.x, chunk.z, false);
++        }
++        chunks.clear();
+     }
+ 
+     private static Vec3 lerp(Vec3 from, Vec3 to, double amount) {
+@@ -472,5 +511,5 @@
+ 
+     private record Encounter(ServerLevel level, SurfaceGuardian guardian, ArmorStand camera,
+                              Vec3 center, String mode, int durationTicks, long startedAt,
+-                             List<ServerPlayer> viewers) { }
++                             List<ServerPlayer> viewers, List<ChunkPos> forcedChunks) { }
+ }
+diff -ruN '--exclude=*.jar' /mnt/data/bosses-base-1.22.10/src/main/java/com/arlight/bosses/network/BossNetworking.java /mnt/data/bosses-src/src/main/java/com/arlight/bosses/network/BossNetworking.java
+--- a/src/main/java/com/arlight/bosses/network/BossNetworking.java	2026-08-06 08:54:08.000000000 +0000
++++ b/src/main/java/com/arlight/bosses/network/BossNetworking.java	2026-08-07 01:18:19.349628387 +0000
+@@ -12,7 +12,7 @@
+     private BossNetworking() { }
+ 
+     public static void register(RegisterPayloadHandlersEvent event) {
+-        event.registrar("1.22.8")
++        event.registrar("1.22.12")
+                 .playToClient(SurfaceGuardianCuePayload.TYPE,
+                         SurfaceGuardianCuePayload.STREAM_CODEC,
+                         BossNetworking::handleClient);
