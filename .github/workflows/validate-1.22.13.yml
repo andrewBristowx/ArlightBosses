@@ -1,0 +1,48 @@
+name: Validar ArlightBosses 1.22.13
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Gradle 9.6.0
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Descargar fuente exacta 1.22.13
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 'https://drive.usercontent.google.com/download?id=17EB50RJ98rfuht7o11ZAGIaDIkiRuu-5&export=download&confirm=t' -o /tmp/source.zip
+          unzip -t /tmp/source.zip | tail -1
+          mkdir -p /tmp/buildsrc
+          unzip -q /tmp/source.zip -d /tmp/buildsrc
+      - name: Compilar
+        working-directory: /tmp/buildsrc
+        run: gradle --no-daemon clean jar
+      - name: Validar JAR
+        run: |
+          set -euo pipefail
+          test -f /tmp/buildsrc/build/libs/ArlightBosses-1.22.13.jar
+          jar tf /tmp/buildsrc/build/libs/ArlightBosses-1.22.13.jar >/dev/null
+          unzip -p /tmp/buildsrc/build/libs/ArlightBosses-1.22.13.jar META-INF/neoforge.mods.toml | grep -F 'version="1.22.13"'
+      - name: Subir JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.13
+          path: /tmp/buildsrc/build/libs/ArlightBosses-1.22.13.jar
+          if-no-files-found: error
+          retention-days: 3
