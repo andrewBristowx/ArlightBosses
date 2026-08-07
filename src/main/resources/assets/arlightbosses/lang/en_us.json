@@ -66,5 +66,17 @@
   "item.arlightbosses.nether_guardian_spawn_egg": "Nether Guardian Spawn Egg",
   "item.arlightbosses.void_guardian_spawn_egg": "Void Guardian Spawn Egg",
   "item.arlightbosses.dragon_guardian_spawn_egg": "Dragon Guardian Spawn Egg",
-  "container.arlightbosses.treasure_chest": "Treasure Chest"
+  "container.arlightbosses.treasure_chest": "Treasure Chest",
+  "item.arlightbosses.mossbound_home_medal": "Mossbound Home Medal",
+  "item.arlightbosses.mossbound_home_medal.lore": "Honors the hero who protected the homes within the corrupted forest.",
+  "item.arlightbosses.gilded_trade_medal": "Gilded Trade Medal",
+  "item.arlightbosses.gilded_trade_medal.lore": "Proof that the trade routes and merchant districts were liberated.",
+  "item.arlightbosses.emerald_bastion_medal": "Emerald Bastion Medal",
+  "item.arlightbosses.emerald_bastion_medal.lore": "A seal earned by breaking the corrupted bastion's defenses.",
+  "block.arlightbosses.home_medal_pedestal": "Mossbound Home Pedestal",
+  "item.arlightbosses.home_medal_pedestal": "Mossbound Home Pedestal",
+  "block.arlightbosses.trade_medal_pedestal": "Gilded Trade Pedestal",
+  "item.arlightbosses.trade_medal_pedestal": "Gilded Trade Pedestal",
+  "block.arlightbosses.bastion_medal_pedestal": "Emerald Bastion Pedestal",
+  "item.arlightbosses.bastion_medal_pedestal": "Emerald Bastion Pedestal"
 }
