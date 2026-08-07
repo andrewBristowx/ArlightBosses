@@ -1,0 +1,41 @@
+name: Validar ArlightBosses 1.22.12
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Gradle 9.6.0
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Extraer fuente exacta
+        run: |
+          mkdir work
+          tar -xJf compile-source.tar.xz -C work
+      - name: Compilar
+        working-directory: work
+        run: gradle --no-daemon clean jar
+      - name: Mostrar JAR
+        run: find work/build/libs -maxdepth 1 -type f -name '*.jar' -ls
+      - name: Subir clases compiladas
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBosses-1.22.12-compiled
+          path: work/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 3

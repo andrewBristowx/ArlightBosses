@@ -1,9 +1,0 @@
-ARLIGHTBOSSES 1.20.0 — CHEST-LID-ALTAR-WITHER-ARM-FIX
-
-- Los cinco cofres abren la tapa hacia arriba, no hacia el suelo.
-- Las piezas visibles del frente y la parte superior quedan unidas a la tapa para no flotar al abrir.
-- Se conservan como frente las caras con cerradura mostradas en las capturas del usuario.
-- El Altar de la Perla Corrompida pasa a ser un GeoBlockEntity animado.
-- El altar tiene animación ambiental de perla flotante, runas, magia y cristales.
-- Bingo puede disparar una animación de activación al consumir la llave del dragón.
-- El brazo de la espada del Wither Skeleton Áureo se desplaza 2.35 unidades hacia afuera y reduce su inclinación hacia el torso.

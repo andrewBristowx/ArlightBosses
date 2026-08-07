@@ -1,9 +1,0 @@
-VALIDACIÓN ARLIGHTBOSSES 1.10.1
-
-- Clases Java modificadas compiladas con Java 21 contra NeoForge 21.1.235.
-- Variantes sincronizadas verificadas en EmeraldCorruptionArrow y GildedShardProjectile.
-- Renderizadores de bloques compilados correctamente.
-- Todos los JSON de recursos del JAR son válidos.
-- Todas las animaciones del Void Guardian contienen el hueso weapon.
-- Pivote runtime del arma: [-12.0255, 29.6, -3.7].
-- neoforge.mods.toml del JAR expandido a versión 1.10.1.

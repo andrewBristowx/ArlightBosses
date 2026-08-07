@@ -1,8 +1,0 @@
-ArlightBosses 1.20.2 SOMITA-NATURAL-HAIR-FIX
-
-- Retira la carcasa cúbica completa añadida alrededor de la cabeza de Somita.
-- Conserva el cabello trasero, superior y lateral, el flequillo, los mechones,
-  el ahoge y el broche de murciélago.
-- La cara vuelve a quedar despejada y el peinado deja de verse como un casco.
-- La corrección se aplica a Somita guía y Somita Vampira, que comparten modelo.
-- No cambia texturas, animaciones, comportamiento, colisiones ni cinemáticas.

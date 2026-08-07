@@ -1,7 +1,0 @@
-VALIDACIÓN 1.11.0
-
-- Clases nuevas y modificadas compiladas con Java 21 contra NeoForge 21.1.235.
-- Texturas 256x256 validadas en RGBA.
-- Renderer normal delegado para dragones no marcados.
-- El boss usa EntityType.ENDER_DRAGON para que Bukkit y Arclight conserven sus eventos.
-- La prueba final de balance, orientación de geodas y comportamiento de las fases debe hacerse dentro del servidor.

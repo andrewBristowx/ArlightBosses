@@ -1,5 +1,0 @@
-ArlightBosses 1.20.1 SOMITA-HAIR-SEAM-FIX
-
-- Añade una capa interior solapada al cabello de Somita.
-- Elimina la franja horizontal de piel visible entre la cabeza y el cabello.
-- Conserva modelos, nombres, animaciones y comportamiento de jefes/mobs.

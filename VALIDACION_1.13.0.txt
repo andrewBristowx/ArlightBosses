@@ -1,7 +1,0 @@
-VALIDACIÓN ARLIGHTBOSSES 1.13.0
-
-- AmethystCorruptedDragonEntity.java compiló con Java 21 contra NeoForge 21.1.235.
-- AmethystCorruptedDragonRenderer.java compiló con Java 21 contra NeoForge 21.1.235.
-- Se verificaron los métodos sincronizados del capullo, la fase terrestre, la muerte prolongada y el huevo final.
-- El JAR fue reconstruido sobre 1.12.0 reemplazando únicamente las clases modificadas y la versión del descriptor.
-- Somita no fue modificada.
