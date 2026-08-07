@@ -1,0 +1,95 @@
+-            if (!tickEncounter(encounter)) iterator.remove();
++            try {
++                if (!tickEncounter(encounter)) iterator.remove();
++            } catch (Throwable throwable) {
++                ArlightBosses.LOGGER.error(
++                        "Se canceló el encuentro del Guardián de la Superficie para evitar cerrar el servidor",
++                        throwable);
++                stopEncounter(encounter, true);
++                iterator.remove();
++            }
+         }
+     }
+ 
+@@ -123,18 +133,20 @@
+         }
+ 
+         Vec3 entrance = entrancePoint(requested);
+-        ArmorStand camera = new ArmorStand(level, entrance.x, requested.y + 5.2D, entrance.z);
++        List<ChunkPos> forcedChunks = forceCinematicChunks(level, entrance, requested);
++        ArmorStand camera = new ArmorStand(level, entrance.x, requested.y + 3.45D, entrance.z);
+         camera.addTag(CAMERA_TAG);
+         camera.setInvisible(true);
+         camera.setInvulnerable(true);
+         camera.setNoGravity(true);
+         camera.setSilent(true);
+-        camera.moveTo(entrance.x, requested.y + 5.2D, entrance.z,
++        camera.moveTo(entrance.x, requested.y + 3.45D, entrance.z,
+                 yawTo(entrance.x, entrance.z, requested),
+-                pitchTo(entrance.x, requested.y + 5.2D, entrance.z,
++                pitchTo(entrance.x, requested.y + 3.45D, entrance.z,
+                         requested.add(0.0D, 1.5D, 0.0D)));
+         if (!level.addFreshEntity(camera)) {
+             guardian.discard();
++            releaseCinematicChunks(level, forcedChunks);
+             throw new IllegalStateException("No se pudo crear la cámara cinematográfica");
+         }
+ 
+@@ -148,7 +160,7 @@
+         level.playSound(null, requested.x, requested.y, requested.z,
+                 SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.HOSTILE, 1.65F, 0.48F);
+         ENCOUNTERS.put(guardian.getUUID(), new Encounter(level, guardian, camera, requested,
+-                mode, Math.max(240, durationTicks), level.getGameTime(), viewers));
++                mode, Math.max(240, durationTicks), level.getGameTime(), viewers, forcedChunks));
+         ArlightBosses.LOGGER.info("Guardián de la Superficie creado en {} {} {} (modo={})",
+                 requested.x, requested.y, requested.z, mode);
+     }
+@@ -161,7 +173,7 @@
+                     Math.max(200, durationTicks), 3));
+         }
+         ENCOUNTERS.put(UUID.randomUUID(), new Encounter(level, null, null, center,
+-                "music", Math.max(200, durationTicks), level.getGameTime(), viewers));
++                "music", Math.max(200, durationTicks), level.getGameTime(), viewers, List.of()));
+     }
+ 
+     private static boolean tickEncounter(Encounter encounter) {
+@@ -177,6 +189,7 @@
+         SurfaceGuardian guardian = encounter.guardian;
+         if (guardian == null || guardian.isRemoved() || !guardian.isAlive()) {
+             if (encounter.camera != null) encounter.camera.discard();
++            releaseCinematicChunks(encounter.level, encounter.forcedChunks);
+             sendStop(encounter.viewers);
+             return false;
+         }
+@@ -249,7 +262,7 @@
+         }
+         if (tick == 20) {
+             level.playSound(null, encounter.center.x, encounter.center.y, encounter.center.z,
+-                    SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.25F, 0.55F);
++                    SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.25F, 0.55F);
+             level.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
+                     encounter.center.x, encounter.center.y + 0.25D, encounter.center.z,
+                     1, 0.0D, 0.0D, 0.0D, 0.0D);
+@@ -269,7 +282,7 @@
+             level.playSound(null, guardian.getX(), guardian.getY(), guardian.getZ(),
+                     SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 1.95F, 0.58F);
+             level.playSound(null, guardian.getX(), guardian.getY(), guardian.getZ(),
+-                    SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.30F, 0.68F);
++                    SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.30F, 0.68F);
+             level.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
+                     guardian.getX(), guardian.getY() + 1.0D, guardian.getZ(),
+                     1, 0.0D, 0.0D, 0.0D, 0.0D);
+@@ -300,38 +313,38 @@
+         if (camera == null || camera.isRemoved()) return;
+ 
+         Vec3 center = encounter.center;
++        Vec3 entrance = entrancePoint(center);
++        // La cámara permanece en la puerta. Solo hace un dolly corto y lateral suave;
++        // nunca orbita alrededor del jefe ni entra hasta la plataforma.
+         Vec3 position;
+-        if (tick < 34) {
+-            double p = smooth(tick / 34.0D);
+-            position = lerp(center.add(-1.8D, 5.35D, -ENTRANCE_DISTANCE),
+-                    center.add(1.2D, 5.05D, -ENTRANCE_DISTANCE + 2.5D), p);
+-        } else if (tick < 86) {
+-            double p = smooth((tick - 34.0D) / 52.0D);
